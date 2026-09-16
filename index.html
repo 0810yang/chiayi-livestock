@@ -208,6 +208,7 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
 .livestock-map-tool-sep{height:1px;background:rgba(100,116,139,.35);margin:1px 5px;}
 .livestock-map-coords{position:absolute;left:16px;bottom:16px;z-index:35;background:rgba(15,23,42,.78);color:#fff;border-radius:7px;padding:7px 10px;font-size:10px;line-height:1.55;letter-spacing:.02em;pointer-events:none;}
 .livestock-map-legend.legend-hidden{display:none;} .livestock-map-legend{position:absolute;left:70px;right:auto;bottom:72px;z-index:35;background:rgba(255,255,255,.96);border:1px solid var(--border);border-radius:9px;padding:10px 12px;box-shadow:0 4px 14px rgba(15,23,42,.12);font-size:11px;}
+.livestock-river-channel-label,.livestock-river-tributary-label{background:rgba(255,255,255,.90);border:0;border-radius:4px;box-shadow:0 1px 4px rgba(15,23,42,.16);padding:2px 6px;font-size:13px;font-weight:700;line-height:1.25;white-space:nowrap;} .livestock-river-channel-label{color:#0f766e;} .livestock-river-tributary-label{color:#0369a1;} .livestock-river-channel-label:before,.livestock-river-tributary-label:before{display:none;}
 .livestock-map-legend strong{display:block;font-size:12px;margin-bottom:7px;}
 .livestock-map-legend-row{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--ink2);}
 .livestock-map-dot{width:10px;height:10px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(15,23,42,.22);flex:0 0 auto;}
@@ -218,7 +219,7 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
 .livestock-map-drawer-toggle{align-self:center;width:25px;height:68px;border:1px solid var(--border);border-right:0;border-radius:8px 0 0 8px;background:#fff;color:var(--ink2);cursor:pointer;box-shadow:-3px 2px 10px rgba(15,23,42,.1);}
 .livestock-map-drawer{width:310px;background:#fff;border-left:1px solid var(--border);display:flex;flex-direction:column;transition:width .22s ease,opacity .18s ease;overflow:hidden;box-shadow:-8px 0 24px rgba(15,23,42,.09);}
 .livestock-map-drawer.collapsed{width:0;opacity:0;border-left:0;}
-.livestock-map-workspace.drawer-collapsed .livestock-map-legend{right:16px;}
+.livestock-map-workspace.drawer-collapsed .livestock-map-legend{left:70px;right:auto;}
 .livestock-map-drawer-head{padding:16px 16px 12px;border-bottom:1px solid var(--border);min-width:310px;}
 .livestock-map-drawer-head strong{font-size:15px;display:block;}
 .livestock-map-drawer-head span{font-size:11px;color:var(--ink3);}
@@ -8808,6 +8809,24 @@ function initLivestockMap() {
 
   // 經濟部水利署公開 WMS：河川水文類。WMS 服務可供圖台套疊使用。
   livestockLayers.riverChannel = L.layerGroup().addTo(livestockMap);
+  // 河川名稱直接標示於圖面：同一河川名稱只顯示一次，避免重複標籤過度擁擠。
+  const livestockRiverChannelNames = new Set();
+  const livestockRiverTributaryNames = new Set();
+  function bindLivestockRiverNameLabel(layer, name, className){
+    const label = String(name || '').trim();
+    if (!label || label === '未提供名稱') return;
+    const labelSet = className === 'livestock-river-channel-label' ? livestockRiverChannelNames : livestockRiverTributaryNames;
+    if (labelSet.has(label)) return;
+    labelSet.add(label);
+    layer.bindTooltip(escapeLivestockMapHtml(label), {
+      permanent:true,
+      direction:'center',
+      className:className,
+      opacity:0.98,
+      interactive:false
+    });
+  }
+
   // 經濟部水利署－河流（河道）：RIVERPOLY 實際圖資
   fetch('data/riverpoly.geojson')
     .then(function(response){
@@ -8829,6 +8848,7 @@ function initLivestockMap() {
           const type = p.RIVER_TYPE ?? '未提供';
           const code = p.RIVER_CODE ?? '未提供';
           const from = p.RIVER_FROM || '未提供';
+          bindLivestockRiverNameLabel(layer, name, 'livestock-river-channel-label');
           layer.bindPopup(
             '<strong>河川（河道）</strong><br>' +
             '名稱：' + escapeLivestockMapHtml(String(name)) + '<br>' +
@@ -8861,6 +8881,7 @@ function initLivestockMap() {
           const p = feature.properties || {};
           const name = p.NAME || '未提供名稱';
           const from = p.FROM || '未提供';
+          bindLivestockRiverNameLabel(layer, name, 'livestock-river-tributary-label');
           layer.bindPopup('<strong>河川（支流）</strong><br>名稱：' + escapeLivestockMapHtml(name) + '<br>來源：' + escapeLivestockMapHtml(from));
         }
       });
