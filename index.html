@@ -207,7 +207,7 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
 .livestock-map-icon-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
 .livestock-map-tool-sep{height:1px;background:rgba(100,116,139,.35);margin:1px 5px;}
 .livestock-map-coords{position:absolute;left:16px;bottom:16px;z-index:35;background:rgba(15,23,42,.78);color:#fff;border-radius:7px;padding:7px 10px;font-size:10px;line-height:1.55;letter-spacing:.02em;pointer-events:none;}
-.livestock-map-legend{position:absolute;right:326px;bottom:16px;z-index:35;background:rgba(255,255,255,.96);border:1px solid var(--border);border-radius:9px;padding:10px 12px;box-shadow:0 4px 14px rgba(15,23,42,.12);font-size:11px;}
+.livestock-map-legend.legend-hidden{display:none;} .livestock-map-legend{position:absolute;left:70px;right:auto;bottom:72px;z-index:35;background:rgba(255,255,255,.96);border:1px solid var(--border);border-radius:9px;padding:10px 12px;box-shadow:0 4px 14px rgba(15,23,42,.12);font-size:11px;}
 .livestock-map-legend strong{display:block;font-size:12px;margin-bottom:7px;}
 .livestock-map-legend-row{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--ink2);}
 .livestock-map-dot{width:10px;height:10px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(15,23,42,.22);flex:0 0 auto;}
@@ -247,6 +247,19 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
   .livestock-map-drawer{width:285px;}
   .livestock-map-drawer-head,.livestock-map-tabs,.livestock-map-panel{min-width:285px;}
 }
+
+/* ===== 嘉義畜產圖台需求增修 ===== */
+.livestock-map-filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.livestock-map-filter-grid .full{grid-column:1/-1;}
+.livestock-map-detail{border:1px solid var(--border);border-radius:9px;background:#f8fafc;padding:10px;margin-top:10px;}
+.livestock-map-detail-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:8px;}
+.livestock-map-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;}
+.livestock-map-detail-item label{display:block;font-size:9px;color:var(--ink3);margin-bottom:2px;}
+.livestock-map-detail-item span{font-size:11px;color:var(--ink2);}
+.livestock-map-case-link{display:inline-flex;margin-top:7px;border:0;background:none;color:var(--blue-text);font-size:11px;padding:0;cursor:pointer;text-decoration:underline;}
+.livestock-map-permission-note{font-size:9px;color:var(--ink3);line-height:1.5;margin-top:4px;}
+@media(max-width:720px){.livestock-map-filter-grid,.livestock-map-detail-grid{grid-template-columns:1fr;}.livestock-map-filter-grid .full{grid-column:auto;}}
+
 @media(max-width:720px){
   .livestock-map-page-head{padding:0 10px;}
   .livestock-map-version{display:none;}
@@ -758,10 +771,17 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
           <button class="livestock-map-icon-btn" onclick="livestockMapZoom(-1)" title="縮小">−</button>
           <button class="livestock-map-icon-btn" onclick="resetLivestockMapView()" title="回到嘉義縣範圍">⌂</button>
           <button class="livestock-map-icon-btn" onclick="locateLivestockMapUser()" title="定位目前位置">◎</button>
+          <button id="livestockMapLegendToggle" class="livestock-map-icon-btn active" onclick="toggleLivestockMapLegend()" title="圖例" aria-label="圖例" aria-expanded="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <line x1="4" y1="6" x2="20" y2="6"></line>
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+              <line x1="4" y1="18" x2="20" y2="18"></line>
+              <circle cx="8" cy="6" r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="8" cy="12" r="1.2" fill="currentColor" stroke="none"></circle>
+              <circle cx="8" cy="18" r="1.2" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </button>
           <div class="livestock-map-tool-sep"></div>
-          <button class="livestock-map-icon-btn" id="livestockToolDistance" onclick="setLivestockMapTool('distance')" title="距離量測">↔</button>
-          <button class="livestock-map-icon-btn" id="livestockToolArea" onclick="setLivestockMapTool('area')" title="面積量測">▱</button>
-          <button class="livestock-map-icon-btn" onclick="clearLivestockMapMeasurement()" title="清除量測">×</button>
         </div>
 
         <div id="livestockMapStatus" class="livestock-map-status"></div>
@@ -769,10 +789,13 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
 
         <div id="livestockMapLegend" class="livestock-map-legend">
           <strong>圖例</strong>
-          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#2563eb"></span>畜牧場</div>
-          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#dc2626"></span>裁罰紀錄</div>
-          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#d97706"></span>輔導紀錄</div>
-          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#7c3aed"></span>未登記場址</div>
+          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#2563eb"></span>畜牧場基本資料</div>
+          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#be123c"></span>陳情紀錄(本府農業處及環保局)</div>
+          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#dc2626"></span>裁罰紀錄(本府農業處及環保局)</div>
+          <div class="livestock-map-legend-row" id="livestockAgriLegendRow"><span class="livestock-map-dot" style="background:#059669"></span>農情調查</div>
+          <div class="livestock-map-legend-row"><span class="livestock-map-dot" style="background:#7c3aed"></span>未有牧登</div>
+          <div class="livestock-map-legend-row"><span class="livestock-map-line-key" style="border-color:#0f766e"></span>河流（河道）</div>
+          <div class="livestock-map-legend-row"><span class="livestock-map-line-key" style="border-color:#38bdf8;border-top-style:dashed"></span>河流（支流）</div>
           <div class="livestock-map-legend-row"><span class="livestock-map-line-key" style="border-color:#2563eb"></span>河川流域範圍圖</div>
           <div class="livestock-map-legend-row"><span class="livestock-map-line-key" style="border-color:#7c3aed;border-top-style:dashed"></span>村里界圖</div>
         </div>
@@ -794,49 +817,116 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
               </div>
               <div class="livestock-map-section">
                 <div class="livestock-map-section-title">畜產業務圖層</div>
-                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('farm',this.checked)"><span class="livestock-map-dot" style="background:#2563eb"></span> 畜牧場</label>
-                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('penalty',this.checked)"><span class="livestock-map-dot" style="background:#dc2626"></span> 裁罰紀錄</label>
-                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('guidance',this.checked)"><span class="livestock-map-dot" style="background:#d97706"></span> 輔導紀錄</label>
-                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('unregistered',this.checked)"><span class="livestock-map-dot" style="background:#7c3aed"></span> 未登記場址</label>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('farm',this.checked)"><span class="livestock-map-dot" style="background:#2563eb"></span> 畜牧場基本資料</label>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('complaint',this.checked)"><span class="livestock-map-dot" style="background:#be123c"></span> 陳情紀錄(本府農業處及環保局)</label>
+                
+                <label class="livestock-map-option" id="livestockAgriLayerOption"><input type="checkbox" id="livestockAgriLayerToggle" checked onchange="setLivestockLayerVisible('agri',this.checked)"><span class="livestock-map-dot" style="background:#059669"></span> 農情調查</label>
+                <div class="livestock-map-permission-note" id="livestockAgriPermissionNote">農情調查僅限「科長」及「農情調查承辦」權限檢視。</div>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('penalty',this.checked)"><span class="livestock-map-dot" style="background:#dc2626"></span> 裁罰紀錄(本府農業處及環保局)</label>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('unregistered',this.checked)"><span class="livestock-map-dot" style="background:#7c3aed"></span> 未有牧登</label>
               </div>
               <div class="livestock-map-section">
-                <div class="livestock-map-section-title">外部參考圖層</div>
-                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('riverBasin',this.checked)"><span class="livestock-map-line-key" style="border-color:#2563eb"></span title="經濟部水利署 BASIN 河川流域範圍圖"> 河川流域範圍圖</label>
-                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('villageBoundary',this.checked)"><span class="livestock-map-line-key" style="border-color:#7c3aed;border-top-style:dashed"></span title="內政部國土測繪中心 村里界圖(TWD97經緯度)"> 村里界圖</label>
+                <div class="livestock-map-section-title">水利及基礎圖資</div>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('riverChannel',this.checked)"><span class="livestock-map-line-key" style="border-color:#0f766e"></span> 經濟部水利署－河流（河道）</label>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('riverTributary',this.checked)"><span class="livestock-map-line-key" style="border-color:#38bdf8;border-top-style:dashed"></span> 經濟部水利署－河流（支流）</label>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('riverBasin',this.checked)"><span class="livestock-map-line-key" style="border-color:#2563eb"></span> 河川流域範圍圖</label>
+                <label class="livestock-map-option"><input type="checkbox" checked onchange="setLivestockLayerVisible('villageBoundary',this.checked)"><span class="livestock-map-line-key" style="border-color:#7c3aed;border-top-style:dashed"></span> 村里界圖</label>
                 <div style="font-size:9px;color:var(--ink3);line-height:1.5;margin-top:4px;">資料來源：經濟部水利署、內政部國土測繪中心</div>
               </div>
             </section>
 
             <section id="livestockMapTabCases" class="livestock-map-panel">
+<div class="livestock-map-section">
+                <div class="livestock-map-section-title">案件篩選</div>
+                
+                <div class="livestock-map-filter-grid">
+                  <label>鄉鎮
+                    <select id="livestockFilterTown">
+                      <option value="">全部鄉鎮</option>
+                    </select>
+                  </label>
+                  <label>村里
+                    <select id="livestockFilterVillage">
+                      <option value="">全部村里</option>
+                    </select>
+                  </label>
+                  <label class="full">飼養種類
+                    <select id="livestockFilterType">
+                      <option value="">全部種類</option>
+                      <option>豬</option>
+                      <option>雞</option>
+                      <option>牛</option>
+                      <option>鴨鵝</option>
+                      <option>其他</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="livestock-map-filter-actions">
+                  <button class="btn btn-primary btn-sm" onclick="filterLivestockMapCases()">套用篩選</button>
+                  <button class="btn btn-sm" onclick="resetLivestockMapFilters()">清除</button>
+                </div>
+              </div>
+
               <div id="livestockMapCaseSummary" class="livestock-map-case-summary">共 0 筆雛型資料</div>
               <div id="livestockMapCaseList"></div>
             </section>
+
           </aside>
         </div>
       </div>
     </div>
 
     <!-- DASHBOARD -->
-    <div class="page" id="page-dashboard">
+    <div class="page" id="page-dashboard" data-dashboard-unified="true">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;"><button class="btn-back-nav" onclick="goBack()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>返回</button><div class="page-title">數據儀表板</div></div>
-      <div class="page-sub">容許使用 · 受災戶資料統計（詳細統計指標待第二次訪談確認）</div>
+      <div class="page-sub">容許使用 · 陳情資料統計</div>
+
       <div class="metric-grid">
-        <div class="metric"><div class="metric-label">容許使用 — 本年度核發</div><div class="metric-num">47</div><div class="metric-sub" style="color:var(--green-text);">↑ 12 件 較去年</div></div>
-        <div class="metric"><div class="metric-label">容許使用 — 審查中</div><div class="metric-num">3</div><div class="metric-sub" style="color:var(--amber-text);">待審核</div></div>
-        <div class="metric"><div class="metric-label">受災戶 — 累計案件</div><div class="metric-num">23</div><div class="metric-sub" style="color:var(--ink3);">颱風 14 · 豪雨 9</div></div>
-        <div class="metric"><div class="metric-label">受災戶 — 本年度新增</div><div class="metric-num">5</div><div class="metric-sub" style="color:var(--red-text);">↑ 3 件 較去年</div></div>
+        <div class="metric">
+          <div class="metric-label">容許使用 — 本年度核發</div>
+          <div class="metric-num">47</div>
+          <div class="metric-sub" style="color:var(--green-text);">↑ 12 件 較去年</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">容許使用 — 審查中</div>
+          <div class="metric-num">3</div>
+          <div class="metric-sub" style="color:var(--amber-text);">待審核</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">陳情紀錄(本府農業處及環保局) — 汙染場域數量</div>
+          <div class="metric-num">513</div>
+          <div class="metric-sub" style="color:var(--blue);">歷年總數量</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">陳情紀錄(本府農業處及環保局) — 與去年相較</div>
+          <div class="metric-num">↓ 510</div>
+          <div class="metric-sub" style="color:var(--red-text);">114年 3 件，113年 513 件</div>
+        </div>
       </div>
+
       <div class="grid-2" style="margin-bottom:16px;">
-        <div class="card"><div class="sec-title">容許使用 — 類別分布</div><div class="chart-wrap"><canvas id="chartBar1"></canvas></div></div>
-        <div class="card"><div class="sec-title">容許使用 — 飼養種類</div><div class="chart-wrap"><canvas id="chartPie1"></canvas></div></div>
+        <div class="card">
+          <div class="sec-title">容許使用 — 類別分布</div>
+          <div class="chart-wrap"><canvas id="chartBar1"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="sec-title">容許使用 — 飼養種類</div>
+          <div class="chart-wrap"><canvas id="chartPie1"></canvas></div>
+        </div>
       </div>
-      <div class="grid-2">
-        <div class="card"><div class="sec-title">受災戶 — 歷年趨勢</div><div class="chart-wrap"><canvas id="chartBar2"></canvas></div></div>
-        <div class="card"><div class="sec-title">受災戶 — 災害名稱</div><div class="chart-wrap"><canvas id="chartPie2"></canvas></div></div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="sec-title">陳情紀錄(本府農業處及環保局) — 依陳情日期（年度月份）</div>
+        <div class="chart-wrap" style="height:330px;"><canvas id="chartBar2"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="sec-title">陳情紀錄(本府農業處及環保局)－依鄉鎮分布</div>
+        <div class="chart-wrap" style="height:430px;"><canvas id="chartTownComplaint"></canvas></div>
       </div>
     </div>
 
-    <!-- ALERTS HUB -->
+<!-- ALERTS HUB -->
     <div class="page" id="page-alerts">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;"><button class="btn-back-nav" onclick="goBack()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>返回</button><div class="page-title">到期提醒</div></div>
       <div class="page-sub">彙整所有即將到期或待追蹤的案件</div>
@@ -3980,13 +4070,15 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
         <div class="card" style="padding:0;overflow:hidden;">
           <table class="tbl">
             <tr><th>畜牧場登記證號</th><th>畜牧場名稱</th><th>鄉鎮別</th><th>調查年度</th><th>調查季度</th><th>飼養狀態</th><th>在養頭數/隻數</th><th class="agri-edit-action">操作</th></tr>
+            <tr><td style="font-family:var(--mono);font-size:11px;">嘉牧登字第00106號</td><td style="font-weight:500;">水上家禽場</td><td>水上鄉</td><td>114年</td><td>第4季</td><td><span class="badge badge-green">在養</span></td><td>480</td><td class="agri-edit-action" style="white-space:nowrap;"><button class="btn btn-sm btn-primary agri-edit-action" style="margin-right:4px;" onclick="navTo('add-p11')">編輯</button><button class="btn btn-sm" style="margin-right:4px;" onclick="openDetailModal('agri')">詳細資訊</button>
+              <button class="btn btn-sm btn-danger agri-edit-action" onclick="confirmDeleteGeneric(this)">刪除</button></td></tr>
             <tr><td style="font-family:var(--mono);font-size:11px;">嘉牧登字第00128號</td><td style="font-weight:500;">陳慶華畜牧場</td><td>六腳鄉</td><td>114年</td><td>第4季</td><td><span class="badge badge-green">在養</span></td><td>480</td><td class="agri-edit-action" style="white-space:nowrap;"><button class="btn btn-sm btn-primary agri-edit-action" style="margin-right:4px;" onclick="navTo('add-p11')">編輯</button><button class="btn btn-sm" style="margin-right:4px;" onclick="openDetailModal('agri')">詳細資訊</button>
               <button class="btn btn-sm btn-danger agri-edit-action" onclick="confirmDeleteGeneric(this)">刪除</button></td></tr>
             <tr><td style="font-family:var(--mono);font-size:11px;">嘉牧登字第00015號</td><td style="font-weight:500;">大林畜牧場</td><td>大林鎮</td><td>114年</td><td>第4季</td><td><span class="badge badge-green">在養</span></td><td>300</td><td class="agri-edit-action" style="white-space:nowrap;"><button class="btn btn-sm btn-primary agri-edit-action" style="margin-right:4px;" onclick="navTo('add-p11')">編輯</button><button class="btn btn-sm" style="margin-right:4px;" onclick="openDetailModal('agri')">詳細資訊</button>
               <button class="btn btn-sm btn-danger agri-edit-action" onclick="confirmDeleteGeneric(this)">刪除</button></td></tr>
           </table>
         </div>
-        <div style="font-size:11px;color:var(--ink3);margin-top:8px;">共 89 筆資料，目前顯示第 1–2 筆</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:8px;">共 89 筆資料，目前顯示第 1–3 筆</div>
       </div>
 
       <!-- 其他畜禽 列表 -->
@@ -4793,7 +4885,70 @@ const USERS = {
 let chartsInit = false;
 let currentUserObj = null;
 
+function resetAccountSessionState() {
+  // 切換帳號時，所有功能頁面的操作歷程與暫存狀態一律歸零。
+  if (typeof pageHistory !== 'undefined') pageHistory.length = 0;
+  if (typeof currentFarm !== 'undefined') currentFarm = null;
+  if (typeof sqCurrentView !== 'undefined') sqCurrentView = 'list';
+  if (typeof sqCurrentFarmId !== 'undefined') sqCurrentFarmId = null;
+  if (typeof sqCurrentTab !== 'undefined') sqCurrentTab = null;
+  if (typeof sqLastResults !== 'undefined') sqLastResults = [];
+  if (typeof sqAdvOpen !== 'undefined') sqAdvOpen = false;
+  if (typeof currentReviewId !== 'undefined') currentReviewId = null;
+  if (typeof currentGroup !== 'undefined') currentGroup = 'chief';
+  if (typeof currentMemberGroup !== 'undefined') currentMemberGroup = null;
+  if (typeof livestockMeasurementPoints !== 'undefined') livestockMeasurementPoints = [];
+  if (typeof livestockMeasurementTool !== 'undefined') livestockMeasurementTool = null;
+
+  // 【綜合查詢】完整恢復成「尚未搜尋」的原始狀態。
+  // 這是帳號隔離的關鍵：不能只清 JavaScript 變數，畫面上的搜尋結果 DOM 也要清掉。
+  var sqKw = document.getElementById('sq-kw');
+  if (sqKw) sqKw.value = '';
+  ['sq-f-town','sq-f-ls','sq-f-status'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  if (typeof sqSetState === 'function') sqSetState(0);
+  var sqCount = document.getElementById('sq-count');
+  if (sqCount) sqCount.textContent = '';
+  var sqNoResult = document.getElementById('sq-no-result');
+  if (sqNoResult) sqNoResult.style.display = 'none';
+  var sqWrap = document.getElementById('sq-list-wrap');
+  if (sqWrap) sqWrap.style.display = 'none';
+  var sqTbl = document.getElementById('sq-list-tbl');
+  if (sqTbl) while (sqTbl.rows.length > 1) sqTbl.deleteRow(1);
+  ['sq-farm-card','sq-tab-body'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+  var sqTabs = document.getElementById('sq-tabs');
+  if (sqTabs) sqTabs.innerHTML = '';
+  var sqFrame = document.getElementById('sq-topology-frame');
+  if (sqFrame) { sqFrame.srcdoc = ''; sqFrame.style.display = 'none'; }
+  var sqListView = document.getElementById('sq-list-view');
+  var sqTopologyView = document.getElementById('sq-topology-view');
+  if (sqListView) sqListView.style.display = '';
+  if (sqTopologyView) sqTopologyView.style.display = 'none';
+
+  // 關閉上一個帳號可能開啟的彈窗／明細。
+  document.querySelectorAll('.modal.show').forEach(function(el){ el.classList.remove('show'); });
+  document.querySelectorAll('.drawer.open').forEach(function(el){ el.classList.remove('open'); });
+
+  // 清除各功能頁面目前的 active 狀態，重新由首頁開始。
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  var home = document.getElementById('page-home');
+  if (home) home.classList.add('active');
+
+  // 清除所有文字／搜尋輸入。
+  document.querySelectorAll('input[type="search"], input[type="text"]').forEach(function(el){
+    if (!el.closest('#profileForm')) el.value = '';
+  });
+}
+
 function login(role) {
+  // 切換帳號時，完全清除上一個帳號在所有功能頁面留下的操作歷程／暫存狀態。
+  resetAccountSessionState();
+  document.body.dataset.userRole = role;
   const u = USERS[role];
   currentUserObj = u;
   document.getElementById('loginPage').style.display = 'none';
@@ -4830,12 +4985,12 @@ function login(role) {
 }
 
 function applyPerms(u) {
-  // 首頁版面切換：科長 / 農情調查承辦 → 版面A；其他 → 版面B
-  const isLayoutA = u.chiefOnly || u.agriOnly;
-  document.getElementById('homeLayoutA').style.display = isLayoutA ? '' : 'none';
-  document.getElementById('homeLayoutB').style.display = isLayoutA ? 'none' : '';
-  // 重設農情調查 tab 為豬
-  if (isLayoutA) switchHomeAgriTab('pig');
+  // 首頁統一：所有權限皆以「駐點人員」目前使用的首頁版面B為基準。
+  // 不因科長／農情調查承辦權限切換首頁圖表內容。
+  const isLayoutA = false;
+  document.getElementById('homeLayoutA').style.display = 'none';
+  document.getElementById('homeLayoutB').style.display = '';
+  // 首頁不顯示農情調查專用首頁圖表。農情調查資料仍依原權限規則於圖台、資料集及拓譜顯示。
   ['staff-data-card','staff-cert-card','staff-map-card','staff-data-menu','staff-map-menu','staff-admin-menu'].forEach(cls => {
     const show = cls.includes('data') ? (u.canEdit || u.chiefOnly || u.agriOnly) : cls.includes('cert') ? true : cls.includes('map') ? u.showMap : cls.includes('admin') ? u.isAdmin : false;
     document.querySelectorAll('.' + cls).forEach(el => el.style.display = show ? '' : 'none');
@@ -4864,9 +5019,15 @@ function applyPerms(u) {
   // 農情調查操作按鈕：只有 canEditAgri 的角色才能操作
   document.querySelectorAll('.agri-edit-action').forEach(el => el.style.display = u.canEditAgri ? '' : 'none');
 
+  // 數據儀表板為共用統一內容：科長、駐點、農情調查承辦皆使用相同儀表板。
+  // 儀表板本身不依角色隱藏或替換任何卡片、圖表或統計內容。
+
 }
 
 function logout() {
+  // 登出時完整清除本次帳號的所有功能頁面操作歷程／暫存狀態。
+  resetAccountSessionState();
+  document.body.dataset.userRole = '';
   document.getElementById('loginPage').style.display = 'flex';
   document.getElementById('mainNav').style.display = 'none';
   document.getElementById('appBody').style.display = 'none';
@@ -4988,12 +5149,39 @@ function setLivestockMapDrawerDefault() {
 function switchLivestockMapTab(name) {
   const names = ['layers','cases'];
   const selected = names.includes(name) ? name : 'layers';
-  document.querySelectorAll('.livestock-map-tab').forEach(function(tab, index){ tab.classList.toggle('active', names[index] === selected); });
+  document.querySelectorAll('.livestock-map-tab').forEach(function(tab, index){
+    tab.classList.toggle('active', names[index] === selected);
+  });
   names.forEach(function(key){
     const panel = document.getElementById('livestockMapTab' + key.charAt(0).toUpperCase() + key.slice(1));
     if (panel) panel.classList.toggle('active', key === selected);
   });
 }
+function populateLivestockLocateFarm() {
+  const select = document.getElementById('livestockLocateFarm');
+  if (!select || typeof LIVESTOCK_MAP_CASES === 'undefined') return;
+  const records = [...LIVESTOCK_MAP_CASES].sort(function(a,b){
+    return (a.name || '').localeCompare(b.name || '', 'zh-Hant');
+  });
+  select.innerHTML = '<option value="">請選擇畜牧場</option>' +
+    records.map(function(r){
+      return '<option value="' + escapeLivestockMapHtml(r.id) + '">' +
+        escapeLivestockMapHtml(r.name || '未命名畜牧場') +
+        '</option>';
+    }).join('');
+}
+
+function locateSelectedLivestockFarm() {
+  const select = document.getElementById('livestockLocateFarm');
+  const id = select ? select.value : '';
+  if (!id) {
+    showLivestockMapStatus('請先選擇畜牧場。', true);
+    return;
+  }
+  switchLivestockMapTab('locate');
+  focusLivestockMapCase(id);
+}
+
 function toggleLivestockMapDrawer() {
   const drawer = document.getElementById('livestockMapDrawer');
   if (!drawer) return;
@@ -5030,7 +5218,8 @@ function _go(pageId) {
   });
   document.querySelector('.main').scrollTop = 0;
   if (pageId === 'dashboard' && !chartsInit) initCharts();
-  if (pageId === 'map') setTimeout(function(){ setLivestockMapDrawerDefault(); if(typeof initLivestockMap==='function') initLivestockMap(); if(typeof livestockMap !== 'undefined' && livestockMap) livestockMap.invalidateSize(); }, 100);
+  if (pageId === 'map') setTimeout(function(){ setLivestockMapDrawerDefault(); if(typeof initLivestockMap==='function') initLivestockMap(); if(typeof livestockMap !== 'undefined' && livestockMap) { livestockMap.invalidateSize(); updateLivestockMapAgriPermission(); populateLivestockMapFilters();
+  populateLivestockLocateFarm(); } }, 100);
   if (pageId === 'permit-review') renderReviewTable();
   if (pageId === 'admin-groups') { selectGroup(currentGroup || 'chief'); }
   if (pageId === 'group-members') { /* 由openGroupMembers負責初始化 */ }
@@ -5226,44 +5415,77 @@ function initCharts() {
   });
 
   dashboardCharts['chartBar2'] = new Chart(document.getElementById('chartBar2'), {
-    type:'bar',
+    type:'line',
     data:{
-      labels:['2022','2023','2024','2025'],
+      labels:["2023/01","2023/02","2023/03","2023/04","2023/05","2023/06","2023/07","2023/08","2023/09","2023/10","2023/11","2023/12","2024/01"],
       datasets:[{
-        label:'受災案件',
-        data:[4,7,7,5],
-        backgroundColor:'#2563eb',
-        borderRadius:4,
-        barThickness:36
+        label:'汙染場域件數',
+        data:[15,6,39,47,51,86,68,64,51,18,38,27,3],
+        borderColor:'#2563eb',
+        backgroundColor:'rgba(37,99,235,0.10)',
+        fill:true,
+        tension:0.25,
+        pointRadius:3,
+        pointHoverRadius:5
       }]
     },
     options:{
       maintainAspectRatio:false,
-      layout:{ padding:{ top:18 } },
-      plugins:{ legend:dashboardChartLegendOptions(f, 'top') },
+      layout:{padding:{top:18,right:12}},
+      plugins:{
+        legend:{display:false}
+      },
       scales:{
-        y:{ beginAtZero:true, ticks:{ font:f } },
-        x:{ ticks:{ font:f } }
+        y:{beginAtZero:true,ticks:{font:f}},
+        x:{ticks:{font:f}}
+      },
+      animation:{
+        onComplete:function(){
+          const chart=this;
+          const ctx=chart.ctx;
+          ctx.save();
+          ctx.font='600 11px Arial';
+          ctx.textAlign='center';
+          ctx.textBaseline='bottom';
+          ctx.fillStyle='#333';
+          chart.data.datasets.forEach(function(dataset, di){
+            const meta=chart.getDatasetMeta(di);
+            meta.data.forEach(function(point, i){
+              const value=dataset.data[i];
+              ctx.fillText(String(value), point.x, point.y-7);
+            });
+          });
+          ctx.restore();
+        }
       }
     }
   });
 
-  dashboardCharts['chartPie2'] = new Chart(document.getElementById('chartPie2'), {
-    type:'pie',
+  dashboardCharts['chartTownComplaint'] = new Chart(document.getElementById('chartTownComplaint'), {
+    type:'bar',
     data:{
-      labels:['颱風','豪雨'],
+      labels:["民雄鄉", "溪口鄉", "中埔鄉", "六腳鄉", "竹崎鄉", "朴子市", "大林鎮", "新港鄉", "水上鄉", "太保市", "鹿草鄉", "義竹鄉", "布袋鎮", "東石鄉", "未提供鄉鎮"],
       datasets:[{
-        data:[14,9],
-        backgroundColor:['#dc2626','#d97706'],
-        borderWidth:2,
-        borderColor:'#fff'
+        label:'汙染場域件數',
+        data:[166, 71, 40, 39, 37, 30, 20, 20, 14, 13, 12, 9, 4, 3, 35],
+        backgroundColor:'#2563eb',
+        borderRadius:4,
+        barThickness:22
       }]
     },
     options:{
       maintainAspectRatio:false,
-      plugins:{ legend:dashboardChartLegendOptions(f, 'top') }
+      indexAxis:'y',
+      layout:{ padding:{ top:8, right:12 } },
+      plugins:{ legend:{ display:false } },
+      scales:{
+        y:{ ticks:{ font:f } },
+        x:{ beginAtZero:true, title:{display:true,text:'汙染場域件數'}, ticks:{ font:f } }
+      }
     }
-  });}
+  });
+
+}
 
 
 function switchTab(el, contentId) {
@@ -6362,19 +6584,15 @@ const DETAIL_DATA = {
   },
   agri: {
     title: '農情調查資料',
-    subtitle: '114 年第4季 · 陳慶華畜牧場',
+    subtitle: '114年第4季 · 水上家禽場',
     farm: [
-      { label:'畜牧場登記證號',   value:'嘉牧登字第00128號', mono:true },
-      { label:'畜牧場名稱',       value:'陳慶華畜牧場' },
-      { label:'負責人',           value:'陳慶華' },
-      { label:'畜牧場場址',       value:'嘉義縣六腳鄉灣南村', full:true },
-      { label:'鄉鎮別',           value:'六腳鄉' },
-      { label:'登記飼養畜禽種類', value:'豬（種公豬、種母豬、肉豬）' },
-      { label:'登記狀態',         value:'正常', badge:'badge-green' },
+      { label:'畜牧場名稱',       value:'水上家禽場' },
+      { label:'畜牧場登記證號',   value:'嘉牧登字第00106號', mono:true },
+      { label:'聯絡人',           value:'王怡雯 (05-268-xxxx)' },
+      { label:'地段號',           value:'柳林段 55 (座標 X：188,904.12　Y：2,588,312.65)' },
     ],
     fields: [
-      { label:'調查年度',           value:'114年' },
-      { label:'調查季度',           value:'第4季' },
+      { label:'調查年度',             value:'114年第4季' },
       { label:'畜禽分類(大項)',       value:'豬' },
       { label:'豬細項種類與頭數',     value:'種公豬 5 頭、種母豬 125 頭、肉豬 350 頭', full:true },
       { label:'飼養狀態',             value:'在養', badge:'badge-green' },
@@ -8402,13 +8620,13 @@ let livestockLocationLayer = null;
 const LIVESTOCK_MAP_HOME = { center:[23.48, 120.43], zoom:11 };
 const LIVESTOCK_MAP_COLORS = { farm:'#2563eb', penalty:'#dc2626', guidance:'#d97706', unregistered:'#7c3aed' };
 const LIVESTOCK_MAP_CASES = [
-  { id:'farm-001', name:'陳慶華畜牧場', reg:'嘉牧登字第00128號', owner:'陳慶華', addr:'水上鄉後壁段', town:'水上鄉', type:'豬', status:'有效', lat:23.4420, lng:120.3890, kind:'farm', tags:['容許使用','有效'] },
-  { id:'farm-002', name:'民雄農牧場', reg:'嘉牧登字第00078號', owner:'張惠美', addr:'民雄鄉中正路', town:'民雄鄉', type:'雞', status:'有效', lat:23.5600, lng:120.4300, kind:'farm', tags:['容許使用','有效'] },
-  { id:'penalty-001', name:'欣欣養殖場', reg:'嘉牧登字第00031號', owner:'林峻德', addr:'朴子市山通路', town:'朴子市', type:'牛', status:'裁罰紀錄', lat:23.4650, lng:120.2430, kind:'penalty', tags:['裁罰紀錄'] },
-  { id:'farm-003', name:'大林畜牧場', reg:'嘉牧登字第00015號', owner:'陳義雄', addr:'大林鎮平林段', town:'大林鎮', type:'豬、雞', status:'有效', lat:23.6050, lng:120.4700, kind:'farm', tags:['有效'] },
-  { id:'guidance-001', name:'新港牧牛場', reg:'嘉牧登字第00055號', owner:'林建宏', addr:'新港鄉中山路', town:'新港鄉', type:'牛', status:'輔導中', lat:23.5550, lng:120.3450, kind:'guidance', tags:['輔導中'] },
-  { id:'unregistered-001', name:'中埔示意場址 A', reg:'尚未提供', owner:'尚未提供', addr:'中埔鄉示意位置', town:'中埔鄉', type:'雞', status:'未登記', lat:23.4210, lng:120.5200, kind:'unregistered', tags:['未登記','示意資料'] },
-  { id:'guidance-002', name:'水上家禽場', reg:'嘉牧登字第00106號', owner:'王怡雯', addr:'水上鄉柳林段', town:'水上鄉', type:'鴨鵝', status:'輔導中', lat:23.4350, lng:120.4050, kind:'guidance', tags:['輔導中'] }
+  { id:'farm-001', name:'陳慶華畜牧場', reg:'嘉牧登字第00128號', owner:'陳慶華', contact:'李小美', phone:'0912-345678', addr:'嘉義縣六腳鄉灣南村', landSection:'灣內段灣內小段', landNo:'355', village:'灣南村', town:'六腳鄉', type:'豬', quantity:'1,520 頭', x:'188,642.18', y:'2,590,314.62', status:'有效', lat:23.4420, lng:120.3890, kind:'farm', tags:['容許使用','有效'] },
+  { id:'farm-002', name:'民雄農牧場', reg:'嘉牧登字第00078號', owner:'張惠美', contact:'張惠美', phone:'05-226-xxxx', addr:'嘉義縣民雄鄉中正路', landSection:'民雄段', landNo:'128-6', village:'中正村', town:'民雄鄉', type:'雞', quantity:'15,800 隻', x:'198,205.31', y:'2,604,882.74', status:'有效', lat:23.5600, lng:120.4300, kind:'farm', tags:['有效'] },
+  { id:'penalty-001', name:'陳慶華畜牧場', reg:'嘉牧登字第00128號', owner:'陳慶華', contact:'李小美', phone:'0912-345678', addr:'嘉義縣六腳鄉灣南村16-6號', landSection:'灣內段灣內小段', landNo:'355', village:'灣南村', town:'六腳鄉', type:'豬', quantity:'1,520 頭', x:'188,642.18', y:'2,590,314.62', status:'裁罰紀錄', lat:23.4650, lng:120.2430, kind:'penalty', tags:['裁罰紀錄'] },
+  { id:'farm-003', name:'大林畜牧場', reg:'嘉牧登字第00015號', owner:'陳義雄', contact:'陳小華', phone:'0936-123456', addr:'嘉義縣大林鎮平林段', landSection:'平林段', landNo:'80', village:'平林里', town:'大林鎮', type:'豬、雞', quantity:'300 頭／3,000 隻', x:'202,742.10', y:'2,609,812.53', status:'有效', lat:23.6050, lng:120.4700, kind:'farm', tags:['有效'] },
+  { id:'guidance-001', name:'新港牧牛場', reg:'嘉牧登字第00055號', owner:'林建宏', contact:'林建宏', phone:'05-374-xxxx', addr:'嘉義縣新港鄉中山路', landSection:'新港段', landNo:'112', village:'中山村', town:'新港鄉', type:'牛', quantity:'180 頭', x:'190,431.82', y:'2,604,251.06', status:'輔導中', lat:23.5550, lng:120.3450, kind:'guidance', tags:['輔導中'] },
+  { id:'unregistered-001', name:'陳義雄', reg:'尚未提供', owner:'陳義雄', contact:'陳義雄', phone:'05-2681234', addr:'嘉義縣水上鄉後壁村後壁33號', landSection:'水上鄉後壁段', landNo:'33', village:'後壁村', town:'水上鄉', type:'豬', quantity:'200 頭', x:'未提供', y:'未提供', status:'未登記', lat:23.4210, lng:120.5200, kind:'unregistered', tags:['未有牧登'] },
+  { id:'guidance-002', name:'水上家禽場', reg:'嘉牧登字第00106號', owner:'王怡雯', contact:'王怡雯', phone:'05-268-xxxx', addr:'嘉義縣水上鄉柳林段', landSection:'柳林段', landNo:'55', village:'柳林村', town:'水上鄉', type:'鴨鵝', quantity:'1,200 隻', x:'188,904.12', y:'2,588,312.65', status:'輔導中', lat:23.4350, lng:120.4050, kind:'guidance', tags:['輔導中'] }
 ];
 
 function escapeLivestockMapHtml(value) {
@@ -8423,19 +8641,90 @@ function buildLivestockMapIcon(color) {
 }
 
 function buildLivestockMapPopup(record) {
-  const badgeClass = { '有效':'badge-green', '裁罰紀錄':'badge-red', '輔導中':'badge-amber', '未登記':'badge-red' };
-  const badges = record.tags.map(function(tag){ return `<span class="badge ${badgeClass[tag] || 'badge-blue'}" style="font-size:10px;">${escapeLivestockMapHtml(tag)}</span>`; }).join(' ');
-  return `<div style="min-width:190px;font-family:'Noto Sans TC',sans-serif;">
-    <div style="font-size:13px;font-weight:600;margin-bottom:3px;">${escapeLivestockMapHtml(record.name)}</div>
-    <div style="font-size:10px;color:#9a968e;margin-bottom:5px;">${escapeLivestockMapHtml(record.reg)}</div>
-    <div style="font-size:11px;margin-bottom:2px;">負責人：${escapeLivestockMapHtml(record.owner)}</div>
-    <div style="font-size:11px;margin-bottom:2px;">場址：${escapeLivestockMapHtml(record.addr)}</div>
-    <div style="font-size:11px;margin-bottom:7px;">飼養種類：${escapeLivestockMapHtml(record.type)}</div>
-    <div style="display:flex;gap:4px;flex-wrap:wrap;">${badges}</div>
-    <div style="font-size:9px;color:#9a968e;margin-top:7px;">雛型展示資料</div>
+  // 不同圖層使用各自資料集的欄位；共通的畜牧場資訊僅在資料集本身需要時呈現。
+  if (record.kind === 'agri') {
+    return `<div style="min-width:300px;max-width:340px;font-family:'Noto Sans TC',sans-serif;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">水上家禽場－農情調查</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">農情調查：豬隻飼養調查（114年第4季）</div>
+      <div style="font-size:12px;line-height:1.75;">
+        <div>畜牧場名稱：水上家禽場</div><div>畜牧場登記證號：嘉牧登字第00106號</div>
+        <div>負責人：王怡雯</div><div>聯絡人：王怡雯 (05-268-xxxx)</div><div>地段號：柳林段 55</div>
+        <div>座標 X：188,904.12　Y：2,588,312.65</div><div>調查年度：114年第4季</div>
+        <div>畜禽分類(大項)：豬</div><div>豬細項種類與頭數：種公豬 5 頭、種母豬 125 頭、肉豬 350 頭</div>
+        <div>飼養狀態：<span class="badge badge-green">在養</span></div>
+      </div>
+      <button type="button" class="livestock-map-case-link" onclick="goToLivestockAgriDetail('agri-001')">查看農情調查明細 →</button>
+    </div>`;
+  }
+
+  const badgeClass = {'有效':'badge-green','裁罰紀錄':'badge-red','輔導中':'badge-amber','未有牧登':'badge-red'};
+  const badges = (record.tags || []).map(function(tag){
+    return `<span class="badge ${badgeClass[tag] || 'badge-blue'}" style="font-size:10px;">${escapeLivestockMapHtml(tag)}</span>`;
+  }).join(' ');
+
+  if (record.kind === 'complaint') {
+    return `<div style="min-width:300px;max-width:340px;font-family:'Noto Sans TC',sans-serif;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">陳慶華畜牧場－陳情案件</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">陳情紀錄(本府農業處及環保局)</div>
+      <div style="font-size:12px;line-height:1.75;">
+        <div>畜牧場登記證號：嘉牧登字第00128號</div>
+        <div>畜牧場名稱：陳慶華畜牧場</div>
+        <div>陳情日期：112/05/10</div>
+        <div>來源：環保局</div>
+        <div>陳情項目：汙染</div>
+        <div>陳情地址：嘉義縣六腳鄉灣南村16-6號</div>
+        <div>陳情說明：汙染：偷排廢水、異味（豬屎味）</div>
+      </div>
+      <button type="button" class="livestock-map-case-link" onclick="navTo('list-p06')">查看陳情紀錄(本府農業處及環保局)明細→</button>
+    </div>`;
+  }
+
+  if (record.kind === 'penalty') {
+    return `<div style="min-width:300px;max-width:340px;font-family:'Noto Sans TC',sans-serif;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">陳慶華畜牧場－裁罰案件</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">裁罰紀錄(本府農業處及環保局)</div>
+      <div style="font-size:12px;line-height:1.75;">
+        <div>畜牧場登記證號：嘉牧登字第00128號</div>
+        <div>畜牧場名稱：陳慶華畜牧場</div>
+        <div>裁處日期：112/06/01</div>
+        <div>違反法令：水污染防治法第7條第1項</div>
+        <div>違反事項：偷排廢水超標、未設置廢水處理設施</div>
+        <div>裁處金額：$30,000</div>
+      </div>
+      <button type="button" class="livestock-map-case-link" onclick="navTo('list-p07')">查看裁罰紀錄(本府農業處及環保局)明細→</button>
+    </div>`;
+  }
+
+  if (record.kind === 'unregistered') {
+    return `<div style="min-width:300px;max-width:340px;font-family:'Noto Sans TC',sans-serif;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">陳義雄－未有牧登</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">未有牧登</div>
+      <div style="font-size:12px;line-height:1.75;">
+        <div>飼養人：陳義雄</div><div>飼養人電話：05-2681234</div>
+        <div>鄉鎮別：水上鄉</div><div>地址：嘉義縣水上鄉後壁村後壁33號</div>
+        <div>地段地號：水上鄉後壁段 33 地號</div><div>飼養種類及隻數：豬 200 頭</div>
+      </div>
+      <button type="button" class="livestock-map-case-link" onclick="navTo('list-p13')">查看未有牧登明細→</button>
+    </div>`;
+  }
+
+  const relation = record.kind === 'farm';
+  const linkHtml = relation
+    ? `<button type="button" class="livestock-map-case-link" onclick="goToLivestockFarm('${escapeLivestockMapHtml(record.id)}')">查看畜牧場基本資料 →</button>`
+    : '';
+  return `<div style="min-width:250px;font-family:'Noto Sans TC',sans-serif;">
+    <div style="font-size:14px;font-weight:600;margin-bottom:3px;">${escapeLivestockMapHtml(record.name)}</div>
+    <div style="font-size:10px;color:#9a968e;margin-bottom:7px;">${escapeLivestockMapHtml(record.reg)}</div>
+    <div style="font-size:11px;margin-bottom:3px;">負責人：${escapeLivestockMapHtml(record.owner || record.contact || '')}</div>
+    <div style="font-size:11px;margin-bottom:3px;">聯絡人：${escapeLivestockMapHtml(record.contact || record.owner || '')}</div>
+    <div style="font-size:11px;margin-bottom:3px;">連絡電話：${escapeLivestockMapHtml(record.phone)}</div>
+    <div style="font-size:11px;margin-bottom:3px;">地段號：${escapeLivestockMapHtml(record.landSection)} ${escapeLivestockMapHtml(record.landNo)}</div>
+    <div style="font-size:11px;margin-bottom:3px;">座標 X：${escapeLivestockMapHtml(record.x)} Y：${escapeLivestockMapHtml(record.y)}</div>
+    <div style="font-size:11px;margin-bottom:3px;">飼養種類：${escapeLivestockMapHtml(record.type)}</div>
+    <div style="font-size:11px;margin-bottom:7px;">飼養數量：${escapeLivestockMapHtml(record.quantity)}</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;">${badges}</div>${linkHtml}
   </div>`;
 }
-
 function createLivestockNlscLayer(url, attribution) {
   const NLSCLayer = L.TileLayer.extend({
     createTile:function(coords, done){
@@ -8462,6 +8751,7 @@ function initLivestockMap() {
   livestockBasemaps.emap.addTo(livestockMap);
 
   ['farm','penalty','guidance','unregistered'].forEach(function(kind){ livestockLayers[kind] = L.layerGroup().addTo(livestockMap); });
+  ['complaint','agri','riverChannel','riverTributary'].forEach(function(kind){ livestockLayers[kind] = L.layerGroup().addTo(livestockMap); });
 
   // 外部參考圖層：官方 WMS 服務
   // 經濟部水利署：河川流域範圍圖（依使用者提供之 BASIN 圖資來源）
@@ -8497,7 +8787,95 @@ function initLivestockMap() {
     console.warn('村里界圖 Village WMS 圖磚載入失敗，請確認國土測繪中心 WMS 服務狀態。');
   });
 
+  // 陳情／農情調查：雛型點位，實際上線時由對應資料集座標帶入。
+  const mapExtraPoints = [
+    {id:'complaint-001',lat:23.4650,lng:120.2430,name:'陳慶華畜牧場－陳情案件',kind:'complaint',color:'#be123c',text:'陳情紀錄：汙染（廢水排放超標）'},
+    {id:'agri-001',lat:23.39646623,lng:120.40226153,name:'水上家禽場－農情調查',kind:'agri',color:'#059669',text:'農情調查：豬隻飼養調查（114年第4季）'},
+    {id:'agri-002',lat:23.5600,lng:120.4300,name:'民雄農牧場－農情調查',kind:'agri',color:'#059669',text:'農情調查：雞隻飼養調查（雛型）'}
+  ];
+  mapExtraPoints.forEach(function(item){
+    const m=L.marker([item.lat,item.lng],{icon:buildLivestockMapIcon(item.color),title:item.name});
+    m.bindPopup(buildLivestockMapPopup({
+      id:item.id, kind:item.kind, name:item.name, text:item.text,
+      reg:'嘉牧登字第00106號', contact:'王怡雯', phone:'05-268-xxxx',
+      landSection:'柳林段', landNo:'55',
+      x:'188,904.12', y:'2,588,312.65',
+      type:'豬', quantity:'種公豬 5 頭、種母豬 125 頭、肉豬 350 頭',
+      tags:['在養']
+    }), {maxWidth:360});
+    m.addTo(livestockLayers[item.kind]);
+  });
+
+  // 經濟部水利署公開 WMS：河川水文類。WMS 服務可供圖台套疊使用。
+  livestockLayers.riverChannel = L.layerGroup().addTo(livestockMap);
+  // 經濟部水利署－河流（河道）：RIVERPOLY 實際圖資
+  fetch('data/riverpoly.geojson')
+    .then(function(response){
+      if (!response.ok) throw new Error('riverpoly.geojson 載入失敗：' + response.status);
+      return response.json();
+    })
+    .then(function(data){
+      const riverChannelGeoJson = L.geoJSON(data, {
+        style: function(){ return {
+          color:'#0f766e',
+          weight:1.8,
+          opacity:0.9,
+          fillColor:'#2dd4bf',
+          fillOpacity:0.18
+        }; },
+        onEachFeature: function(feature, layer){
+          const p = feature.properties || {};
+          const name = p.RIVER_NAME || '未提供名稱';
+          const type = p.RIVER_TYPE ?? '未提供';
+          const code = p.RIVER_CODE ?? '未提供';
+          const from = p.RIVER_FROM || '未提供';
+          layer.bindPopup(
+            '<strong>河川（河道）</strong><br>' +
+            '名稱：' + escapeLivestockMapHtml(String(name)) + '<br>' +
+            '河川類型：' + escapeLivestockMapHtml(String(type)) + '<br>' +
+            '河川代碼：' + escapeLivestockMapHtml(String(code)) + '<br>' +
+            '來源河川：' + escapeLivestockMapHtml(String(from))
+          );
+        }
+      });
+      riverChannelGeoJson.addTo(livestockLayers.riverChannel);
+      livestockLayers.riverChannel.bringToFront();
+      console.info('河川（河道）圖資載入完成，共 ' + (data.features || []).length + ' 筆。');
+    })
+    .catch(function(error){
+      console.warn(error);
+      showLivestockMapStatus('河川（河道）圖資載入失敗，請確認 data/riverpoly.geojson 是否已放入 Git。', true);
+    });
+  // 河川(支流)：使用本次提供的 RIVERLIN Shapefile 轉製 GeoJSON，直接套疊於圖台。
+  // 原始資料欄位：NAME（名稱）、FROM（來源）；座標系統：TWD97 / TM2 zone 121。
+  livestockLayers.riverTributary = L.layerGroup().addTo(livestockMap);
+  fetch('data/riverlin.geojson')
+    .then(function(response){
+      if (!response.ok) throw new Error('riverlin.geojson 載入失敗：' + response.status);
+      return response.json();
+    })
+    .then(function(data){
+      const tributaryGeoJson = L.geoJSON(data, {
+        style: function(){ return { color:'#38bdf8', weight:2.2, opacity:0.92, dashArray:'7 5' }; },
+        onEachFeature: function(feature, layer){
+          const p = feature.properties || {};
+          const name = p.NAME || '未提供名稱';
+          const from = p.FROM || '未提供';
+          layer.bindPopup('<strong>河川（支流）</strong><br>名稱：' + escapeLivestockMapHtml(name) + '<br>來源：' + escapeLivestockMapHtml(from));
+        }
+      });
+      tributaryGeoJson.addTo(livestockLayers.riverTributary);
+      livestockLayers.riverTributary.bringToFront();
+      console.info('河川（支流）圖資載入完成，共 ' + (data.features || []).length + ' 筆。');
+    })
+    .catch(function(error){
+      console.warn(error);
+      showLivestockMapStatus('河川（支流）圖資載入失敗，請確認 data/riverlin.geojson 是否已放入 Git。', true);
+    });
+
   LIVESTOCK_MAP_CASES.forEach(function(record){
+    // 圖台不呈現「輔導紀錄」點位。
+    if (record.kind === 'guidance') return;
     const marker = L.marker([record.lat, record.lng], { icon:buildLivestockMapIcon(LIVESTOCK_MAP_COLORS[record.kind] || '#2563eb'), title:record.name });
     marker.bindPopup(buildLivestockMapPopup(record), { maxWidth:260 });
     marker.addTo(livestockLayers[record.kind]);
@@ -8512,7 +8890,9 @@ function initLivestockMap() {
   livestockMap.on('dblclick', finishLivestockMapMeasurement);
   livestockMap.on('locationfound', handleLivestockLocationFound);
   livestockMap.on('locationerror', function(){ showLivestockMapStatus('無法取得目前位置，請確認瀏覽器定位權限。', true); });
+  populateLivestockMapFilters();
   renderLivestockMapCases(LIVESTOCK_MAP_CASES);
+  updateLivestockMapAgriPermission();
 }
 
 function switchLivestockBasemap(type) {
@@ -8522,6 +8902,15 @@ function switchLivestockBasemap(type) {
   livestockBasemaps[type].bringToBack();
 }
 
+function toggleLivestockMapLegend() {
+  const legend = document.getElementById('livestockMapLegend');
+  const button = document.getElementById('livestockMapLegendToggle');
+  if (!legend || !button) return;
+  const hidden = legend.classList.toggle('legend-hidden');
+  button.classList.toggle('active', !hidden);
+  button.setAttribute('aria-expanded', hidden ? 'false' : 'true');
+  button.title = hidden ? '顯示圖例' : '隱藏圖例';
+}
 function setLivestockLayerVisible(kind, visible) {
   if (!livestockMap || !livestockLayers[kind]) return;
   if (visible) livestockLayers[kind].addTo(livestockMap); else livestockMap.removeLayer(livestockLayers[kind]);
@@ -8533,27 +8922,273 @@ function renderLivestockMapCases(records) {
   if (!list || !summary) return;
   summary.textContent = `共 ${records.length} 筆雛型資料`;
   list.innerHTML = records.length ? records.map(function(record){
-    return `<button type="button" class="livestock-map-case" onclick="focusLivestockMapCase('${escapeLivestockMapHtml(record.id)}')"><strong>${escapeLivestockMapHtml(record.name)}</strong><span>${escapeLivestockMapHtml(record.town)} · ${escapeLivestockMapHtml(record.type)} · ${escapeLivestockMapHtml(record.status)}</span><span>${escapeLivestockMapHtml(record.reg)}</span></button>`;
+    return `<button type="button" class="livestock-map-case" onclick="focusLivestockMapCase('${escapeLivestockMapHtml(record.id)}')"><strong>${escapeLivestockMapHtml(record.name)}</strong><span>${escapeLivestockMapHtml(record.town)} ${escapeLivestockMapHtml(record.village)} · ${escapeLivestockMapHtml(record.type)}</span><span>${escapeLivestockMapHtml(record.reg)} · ${escapeLivestockMapHtml(record.quantity)}</span><span>聯絡人：${escapeLivestockMapHtml(record.contact || record.owner)}</span><span style="color:var(--blue-text);margin-top:4px;">點選查看位置與場域明細</span></button>`;
   }).join('') : '<div style="font-size:12px;color:var(--ink3);padding:12px 0;">查無符合條件的雛型資料</div>';
 }
 
-function filterLivestockMapCases() {
-  const town = document.getElementById('livestockFilterTown').value.trim();
-  const name = document.getElementById('livestockFilterName').value.trim().toLowerCase();
-  const reg = document.getElementById('livestockFilterReg').value.trim().toLowerCase();
-  const type = document.getElementById('livestockFilterType').value.trim();
-  const status = document.getElementById('livestockFilterStatus').value.trim();
-  const filtered = LIVESTOCK_MAP_CASES.filter(function(record){
-    return (!town || record.town === town) && (!name || record.name.toLowerCase().includes(name)) && (!reg || record.reg.toLowerCase().includes(reg)) && (!type || record.type.includes(type)) && (!status || record.status === status);
+function populateLivestockMapFilters() {
+  const town = document.getElementById('livestockFilterTown');
+  const village = document.getElementById('livestockFilterVillage');
+  const type = document.getElementById('livestockFilterType');
+  if (!town || !village || !type) return;
+
+  const towns = [...new Set(LIVESTOCK_MAP_CASES.map(r=>r.town).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+
+  town.innerHTML = '<option value="">全部鄉鎮</option>' +
+    towns.map(function(v){
+      return `<option value="${escapeLivestockMapHtml(v)}">${escapeLivestockMapHtml(v)}</option>`;
+    }).join('');
+
+  // 初始狀態：全部鄉鎮時，村里僅能維持「全部村里」。
+  updateLivestockMapFilterOptions();
+
+  // 三個條件互相聯動，但不要求一定要依固定順序選擇。
+  town.onchange = function(){
+    updateLivestockMapFilterOptions('town');
+  };
+
+  village.onchange = function(){
+    updateLivestockMapFilterOptions('village');
+  };
+
+  type.onchange = function(){
+    updateLivestockMapFilterOptions('type');
+  };
+}
+
+function updateLivestockMapFilterOptions(changedBy) {
+  const town = document.getElementById('livestockFilterTown');
+  const village = document.getElementById('livestockFilterVillage');
+  const type = document.getElementById('livestockFilterType');
+  if (!town || !village || !type) return;
+
+  const selectedTown = town.value || '';
+  const selectedVillage = village.value || '';
+  const selectedType = type.value || '';
+
+  // 依「村里＋飼養種類」計算仍有資料的鄉鎮。
+  const townRows = LIVESTOCK_MAP_CASES.filter(function(r){
+    return (!selectedVillage || r.village === selectedVillage) &&
+           (!selectedType || String(r.type || '').includes(selectedType));
   });
+
+  const towns = [...new Set(townRows.map(function(r){ return r.town; }).filter(Boolean))]
+    .sort(function(a,b){ return a.localeCompare(b,'zh-Hant'); });
+
+  town.innerHTML = '<option value="">全部鄉鎮</option>' +
+    towns.map(function(v){
+      return `<option value="${escapeLivestockMapHtml(v)}">${escapeLivestockMapHtml(v)}</option>`;
+    }).join('');
+
+  // 若原本選的鄉鎮仍有符合資料就保留，否則清除。
+  if (selectedTown && towns.includes(selectedTown)) {
+    town.value = selectedTown;
+  } else {
+    town.value = '';
+  }
+
+  const effectiveTown = town.value || '';
+
+  // 依「鄉鎮＋飼養種類」計算仍有資料的村里。
+  const villageRows = LIVESTOCK_MAP_CASES.filter(function(r){
+    return (!effectiveTown || r.town === effectiveTown) &&
+           (!selectedType || String(r.type || '').includes(selectedType));
+  });
+
+  const villages = [...new Set(villageRows.map(function(r){ return r.village; }).filter(Boolean))]
+    .sort(function(a,b){ return a.localeCompare(b,'zh-Hant'); });
+
+  if (!effectiveTown) {
+    // 尚未選定鄉鎮時，村里維持全部村里，避免跨鄉鎮選村里。
+    village.innerHTML = '<option value="">全部村里</option>';
+    village.value = '';
+    village.disabled = true;
+  } else {
+    village.innerHTML = '<option value="">全部村里</option>' +
+      villages.map(function(v){
+        return `<option value="${escapeLivestockMapHtml(v)}">${escapeLivestockMapHtml(v)}</option>`;
+      }).join('');
+
+    // 保留仍然符合目前條件的村里；若不符合就清除。
+    if (selectedVillage && villages.includes(selectedVillage)) {
+      village.value = selectedVillage;
+    } else {
+      village.value = '';
+    }
+    village.disabled = false;
+  }
+
+  const effectiveVillage = village.value || '';
+
+  // 飼養種類：嚴格依「目前選定的鄉鎮＋村里」計算。
+  // 不再把所有固定種類強制塞回下拉選單，因此只會顯示目前條件下「剩下來」的種類。
+  const typeRows = LIVESTOCK_MAP_CASES.filter(function(r){
+    return (!effectiveTown || r.town === effectiveTown) &&
+           (!effectiveVillage || r.village === effectiveVillage);
+  });
+
+  const types = [...new Set(
+    typeRows.flatMap(function(r){
+      if (Array.isArray(r.type)) return r.type;
+      return String(r.type || '')
+        .split(/[、,，\/]/)
+        .map(function(v){ return v.trim(); })
+        .filter(Boolean);
+    })
+  )].sort(function(a,b){ return a.localeCompare(b,'zh-Hant'); });
+
+  type.innerHTML = '<option value="">全部種類</option>' +
+    types.map(function(v){
+      return `<option value="${escapeLivestockMapHtml(v)}">${escapeLivestockMapHtml(v)}</option>`;
+    }).join('');
+
+  // 原本選定的飼養種類仍存在於目前條件時才保留。
+  if (selectedType && types.includes(selectedType)) {
+    type.value = selectedType;
+  } else {
+    type.value = '';
+  }
+
+  // 三個條件互相聯動：
+  // 鄉鎮 → 村里、飼養種類縮減
+  // 村里 → 鄉鎮、飼養種類縮減
+  // 飼養種類 → 鄉鎮、村里縮減
+  // 不需要固定選擇順序。
+}
+
+
+function filterLivestockMapCases() {
+  const townEl = document.getElementById('livestockFilterTown');
+  const villageEl = document.getElementById('livestockFilterVillage');
+  const typeEl = document.getElementById('livestockFilterType');
+
+  const town = (townEl || {}).value || '';
+  let village = (villageEl || {}).value || '';
+  const type = (typeEl || {}).value || '';
+
+  // 沒有選鄉鎮時，村里固定視為「全部村里」。
+  if (!town) {
+    village = '';
+    if (villageEl) villageEl.value = '';
+  }
+
+  const filtered = LIVESTOCK_MAP_CASES.filter(function(record){
+    return (!town || record.town === town) &&
+           (!village || record.village === village) &&
+           (!type || record.type.includes(type));
+  });
+
+  // 依篩選結果更新點位可見性
+  Object.keys(livestockMarkers).forEach(function(id){
+    const r = LIVESTOCK_MAP_CASES.find(x=>x.id===id);
+    const keep = filtered.some(x=>x.id===id);
+    if(r && livestockMap && livestockLayers[r.kind]) {
+      if(keep) livestockMarkers[id].addTo(livestockLayers[r.kind]);
+      else livestockLayers[r.kind].removeLayer(livestockMarkers[id]);
+    }
+  });
+
   renderLivestockMapCases(filtered);
-  switchLivestockMapTab('cases');
-  if (filtered.length === 1) focusLivestockMapCase(filtered[0].id);
+
+  // 搜尋後維持在「案件篩選」頁籤，不跳轉案件清單；
+  // 篩選結果直接反映在地圖上的畜牧場點位。
+  if (livestockMap && filtered.length > 0) {
+    const group = L.featureGroup(
+      filtered
+        .map(function(r){ return livestockMarkers[r.id]; })
+        .filter(function(marker){ return !!marker; })
+    );
+    if (group.getLayers().length > 0) {
+      livestockMap.fitBounds(group.getBounds().pad(0.15), {maxZoom: 15});
+    }
+  }
 }
 
 function resetLivestockMapFilters() {
-  ['livestockFilterTown','livestockFilterName','livestockFilterReg','livestockFilterType','livestockFilterStatus'].forEach(function(id){ const el = document.getElementById(id); if (el) el.value = ''; });
+  const town = document.getElementById('livestockFilterTown');
+  const village = document.getElementById('livestockFilterVillage');
+  const type = document.getElementById('livestockFilterType');
+
+  if (town) town.value = '';
+  if (village) village.value = '';
+  if (type) type.value = '';
+
+  // 回到全部鄉鎮／全部村里／全部種類。
+  updateLivestockMapFilterOptions('reset');
+
+  LIVESTOCK_MAP_CASES.forEach(function(r){
+    if (r.kind === 'guidance') return;
+    if (livestockMarkers[r.id] && livestockLayers[r.kind])
+      livestockMarkers[r.id].addTo(livestockLayers[r.kind]);
+  });
+
   renderLivestockMapCases(LIVESTOCK_MAP_CASES);
+
+  // 清除篩選後，地圖也恢復為全部場域的完整範圍。
+  if (livestockMap) {
+    const allMarkers = LIVESTOCK_MAP_CASES
+      .map(function(r){ return livestockMarkers[r.id]; })
+      .filter(function(marker){ return !!marker; });
+
+    if (allMarkers.length > 0) {
+      const allGroup = L.featureGroup(allMarkers);
+      livestockMap.fitBounds(allGroup.getBounds().pad(0.15), { maxZoom: 11, animate: true });
+    } else {
+      resetLivestockMapView();
+    }
+  }
+}
+
+
+function goToLivestockFarm(id) {
+  const record = LIVESTOCK_MAP_CASES.find(function(item){ return item.id === id; });
+  if (!record) return;
+  if (record.kind === 'unregistered') { navTo('list-p13'); return; }
+  navTo('list-p02');
+  setTimeout(function(){
+    const kw=document.getElementById('p02FarmKeyword');
+    if(kw){ kw.value=record.name; if(typeof searchP02==='function') searchP02('farm'); }
+  },80);
+}
+
+function goToLivestockAgriDetail(id) {
+  // 農情調查點位的「查看農情調查明細」直接進入農情調查資料集。
+  if (id !== 'agri-001') return;
+  navTo('list-p11');
+  setTimeout(function(){
+    const page = document.getElementById('page-list-p11');
+    if (!page) return;
+
+    // 切到「豬」資料頁籤（農情調查點位為豬隻調查）。
+    const pigTab = page.querySelector('.tab-bar .tab');
+    if (pigTab && typeof switchAgriListTab === 'function') {
+      switchAgriListTab(pigTab, 'agri-list-pig');
+    }
+
+    // 讓對應資料列醒目顯示。
+    const rows = page.querySelectorAll('#agri-list-pig table tbody tr, #agri-list-pig table tr');
+    rows.forEach(function(row){
+      if (row.textContent.indexOf('00106') >= 0 || row.textContent.indexOf('水上家禽場') >= 0) {
+        row.style.outline = '2px solid var(--primary)';
+        row.style.background = 'var(--primary-soft)';
+      }
+    });
+  }, 80);
+}
+
+function updateLivestockMapAgriPermission() {
+  const allowed = !!currentUserObj && !!(currentUserObj.chiefOnly || currentUserObj.agriOnly);
+  const opt=document.getElementById('livestockAgriLayerOption');
+  const toggle=document.getElementById('livestockAgriLayerToggle');
+  const note=document.getElementById('livestockAgriPermissionNote');
+  const legend=document.getElementById('livestockAgriLegendRow');
+  if(opt) opt.style.display = allowed ? 'flex' : 'none';
+  if(legend) legend.style.display = allowed ? 'flex' : 'none';
+  if(toggle) { toggle.checked = allowed; toggle.disabled = !allowed; }
+  if(!allowed && livestockMap && livestockLayers.agri) livestockMap.removeLayer(livestockLayers.agri);
+  if(allowed && livestockMap && toggle && toggle.checked) livestockLayers.agri.addTo(livestockMap);
+  if(note) note.style.display = allowed ? 'block' : 'none';
 }
 
 function focusLivestockMapCase(id) {
@@ -9244,13 +9879,14 @@ var SQ_TOPOLOGY_HTML = "<!doctype html>\n<html lang=\"zh-Hant\">\n<head>\n  <met
 
 function sqBuildEmbeddedTopologyHtml(farm) {
   var farmJson = JSON.stringify(farm || {}).replace(/<\/script/gi, '<\\/script');
-  var inject = '<script>window.__SQ_FARM = ' + farmJson + ';<\/script>';
+  var allowAgri = !!currentUserObj && !!(currentUserObj.chiefOnly || currentUserObj.agriOnly);
+  var inject = '<script>window.__SQ_FARM = ' + farmJson + '; window.__SQ_ALLOW_AGRI = ' + (allowAgri ? 'true' : 'false') + ';<\/script>';
   var html = SQ_TOPOLOGY_HTML;
   // 拓譜原始頁已帶 embedded-topology class，不能再找單純 <body>。
   // 將目前綜合查詢的畜牧場資料直接注入拓譜頁，並在拓譜程式初始化後套用。
   html = html.replace(/<body(?:\s[^>]*)?>/i, function(tag){ return tag + inject; });
   html = html.replace(/initSearch\(\);\s*renderKPIs\(\);\s*renderMindmap\(\);\s*updateInspector\(\);\s*resetMindmap\(\);/,
-    "if (window.__SQ_FARM && window.__SQ_FARM.name) { currentFarm = window.__SQ_FARM; } initSearch(); renderKPIs(); renderMindmap(); updateInspector(); resetMindmap();");
+    "if (!window.__SQ_ALLOW_AGRI && typeof DATA !== 'undefined' && Array.isArray(DATA.datasets)) DATA.datasets = DATA.datasets.filter(function(ds){ return ds.id !== 'ds_12' && ds.name !== '農情調查資料' && ds.name !== '農情調查'; }); if (window.__SQ_FARM && window.__SQ_FARM.name) { currentFarm = window.__SQ_FARM; } initSearch(); renderKPIs(); renderMindmap(); updateInspector(); resetMindmap();");
   return html;
 }
 
