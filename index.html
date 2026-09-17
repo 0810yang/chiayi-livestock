@@ -305,6 +305,57 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
 .sq-row-actions{display:flex;gap:6px;align-items:center;}
 @media(max-width:900px){#sq-topology-frame{height:680px;}}
 </style>
+
+<style id="facility-ui-adjustment">
+.facility-item-header,
+.facility-item-row {
+  display: grid !important;
+  grid-template-columns: minmax(150px, 1.35fr) minmax(140px, 1.35fr) minmax(80px, .8fr) minmax(90px, .9fr) minmax(90px, .9fr) 110px 34px !important;
+  gap: 8px !important;
+  align-items: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.facility-item-row > * {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+.facility-item-row input,
+.facility-item-row select {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+.facility-item-header {
+  margin-bottom: 2px;
+}
+@media (max-width: 900px) {
+  .facility-item-header,
+  .facility-item-row {
+    grid-template-columns: 1.2fr 1.2fr .75fr .85fr .85fr 90px 32px !important;
+  }
+}
+</style>
+
+
+<style id="facility-area-unit-fixed">
+.facility-area-unit {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--bg2);
+  color: var(--ink2);
+  font-size: 13px;
+  line-height: 1;
+}
+</style>
+
 </head>
 <body>
 
@@ -2173,27 +2224,28 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
 
           <!-- 設施項目 -->
           <div style="font-size:12.5px;font-weight:500;margin-bottom:8px;">設施項目</div>
+          <div class="facility-item-header" style="display:grid;grid-template-columns:minmax(150px,1.35fr) minmax(140px,1.35fr) minmax(80px,.8fr) minmax(90px,.9fr) minmax(90px,.9fr) 110px 34px;gap:8px;align-items:center;padding:4px 0 6px;color:var(--ink3);font-size:12px;">
+  <div>設施類別</div><div>設施名稱</div><div>數量</div><div>設施單位</div><div>面積</div><div>面積單位</div><div></div>
+</div>
           <div id="farm-facility-rows">
-            <div class="facility-item-row" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-              <select style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
-                <option value="">請選擇設施</option>
-                <option>固液分離設施</option>
-                <option>沼氣池</option>
-                <option>廢水處理設施</option>
-                <option>廢污水儲存槽</option>
-                <option>沼液沼渣貯存池</option>
-                <option>雨廢水分離設施</option>
-                <option>除臭設施</option>
-                <option>孵化室</option>
-                <option>飼料倉庫</option>
-                <option>管理室</option>
-                <option>堆肥場</option>
-                <option>其他</option>
-              </select>
-              <button class="btn-remove" onclick="removeRow(this)">×</button>
-            </div>
-          </div>
-          <button class="btn-add-row" onclick="addFacilityRow('farm-facility-rows')" style="margin-top:8px;">＋ 新增設施項目</button>
+<div class="facility-item-row" style="display:grid;grid-template-columns:minmax(150px,1.35fr) minmax(140px,1.35fr) minmax(80px,.8fr) minmax(90px,.9fr) minmax(90px,.9fr) 110px 34px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+  <select class="facility-category" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;"><option value="">請選擇設施類別</option><option selected>禽舍</option><option>畜禽舍</option><option>飼(芻)料調配室</option><option>死廢畜禽或孵化廢棄物處理</option>
+<option>堆肥舍</option><option>防疫消毒設施</option><option>畜禽停棲場</option><option>管理室</option>
+<option>倉儲設施</option><option>廢水處理設施</option><option>擠乳及儲乳設施</option><option>空地面積</option>
+<option>運動場面積</option><option>其他面積</option><option>其他設施</option><option>飼料桶</option>
+<option>孵化室</option><option>雛禽處理室</option><option>禽蛋洗選室</option><option>儲蛋室</option>
+<option>檢驗室</option><option>資料處理室</option><option>電機室</option><option>隔離檢疫室</option>
+<option>更衣消毒室</option><option>焚化爐</option><option>銷售專用承載區或出口</option><option>通道面積</option>
+<option>水塔</option><option>蓄水池</option><option>水池</option><option>消毒池</option><option>圍牆面積</option>
+<option>地磅</option><option>農舍</option></select>
+  <input type="text" class="facility-name" value="雞舍" placeholder="設施名稱" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <input type="text" class="facility-qty" value="73" placeholder="數量" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <input type="text" class="facility-unit" value="棟" placeholder="設施單位" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <input type="text" class="facility-area" value="7049.4" placeholder="面積" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <div class="facility-area-unit">平方公尺</div>
+  <button class="btn-remove" onclick="removeRow(this)">×</button>
+</div>
+<button class="btn-add-row" onclick="addFacilityRow('farm-facility-rows')" style="margin-top:8px;">＋ 新增設施項目</button>
         </div>
 
         <!-- ⑤ 獸醫師資訊 -->
@@ -2275,7 +2327,7 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
           </div>
         </div>
 
-        <div class="form-actions edit-action"><button class="btn" onclick="goBack()">取消</button><button class="btn btn-primary">儲存新增</button></div>
+        <div class="form-actions edit-action"><button class="btn" onclick="goBack()">取消</button><button class="btn btn-primary" onclick="saveP02Registration('farm')">儲存新增</button></div>
         </div><!-- end t02f-single -->
         <div class="tab-content" id="t02f-batch">
           <div class="form-card">
@@ -2496,19 +2548,28 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
             <input type="text" placeholder="其他說明" style="margin-top:8px;width:100%;font-size:13px;padding:7px 12px;border-radius:var(--radius);border:1px solid var(--border2);">
           </div>
           <div style="font-size:12.5px;font-weight:500;margin-bottom:8px;">設施項目</div>
+          <div class="facility-item-header" style="display:grid;grid-template-columns:minmax(150px,1.35fr) minmax(140px,1.35fr) minmax(80px,.8fr) minmax(90px,.9fr) minmax(90px,.9fr) 110px 34px;gap:8px;align-items:center;padding:4px 0 6px;color:var(--ink3);font-size:12px;">
+  <div>設施類別</div><div>設施名稱</div><div>數量</div><div>設施單位</div><div>面積</div><div>面積單位</div><div></div>
+</div>
           <div id="ranch-facility-rows">
-            <div class="facility-item-row" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-              <select style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
-                <option value="">請選擇設施</option>
-                <option>固液分離設施</option><option>沼氣池</option><option>廢水處理設施</option>
-                <option>廢污水儲存槽</option><option>沼液沼渣貯存池</option><option>雨廢水分離設施</option>
-                <option>除臭設施</option><option>孵化室</option><option>飼料倉庫</option>
-                <option>管理室</option><option>堆肥場</option><option>其他</option>
-              </select>
-              <button class="btn-remove" onclick="removeRow(this)">×</button>
-            </div>
-          </div>
-          <button class="btn-add-row" onclick="addFacilityRow('ranch-facility-rows')" style="margin-top:8px;">＋ 新增設施項目</button>
+<div class="facility-item-row" style="display:grid;grid-template-columns:minmax(150px,1.35fr) minmax(140px,1.35fr) minmax(80px,.8fr) minmax(90px,.9fr) minmax(90px,.9fr) 110px 34px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+  <select class="facility-category" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;"><option value="">請選擇設施類別</option><option selected>禽舍</option><option>畜禽舍</option><option>飼(芻)料調配室</option><option>死廢畜禽或孵化廢棄物處理</option>
+<option>堆肥舍</option><option>防疫消毒設施</option><option>畜禽停棲場</option><option>管理室</option>
+<option>倉儲設施</option><option>廢水處理設施</option><option>擠乳及儲乳設施</option><option>空地面積</option>
+<option>運動場面積</option><option>其他面積</option><option>其他設施</option><option>飼料桶</option>
+<option>孵化室</option><option>雛禽處理室</option><option>禽蛋洗選室</option><option>儲蛋室</option>
+<option>檢驗室</option><option>資料處理室</option><option>電機室</option><option>隔離檢疫室</option>
+<option>更衣消毒室</option><option>焚化爐</option><option>銷售專用承載區或出口</option><option>通道面積</option>
+<option>水塔</option><option>蓄水池</option><option>水池</option><option>消毒池</option><option>圍牆面積</option>
+<option>地磅</option><option>農舍</option></select>
+  <input type="text" class="facility-name" value="雞舍" placeholder="設施名稱" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <input type="text" class="facility-qty" value="73" placeholder="數量" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <input type="text" class="facility-unit" value="棟" placeholder="設施單位" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <input type="text" class="facility-area" value="7049.4" placeholder="面積" style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
+  <div class="facility-area-unit">平方公尺</div>
+  <button class="btn-remove" onclick="removeRow(this)">×</button>
+</div>
+<button class="btn-add-row" onclick="addFacilityRow('ranch-facility-rows')" style="margin-top:8px;">＋ 新增設施項目</button>
         </div>
 
         <!-- ⑤ 獸醫師資訊 -->
@@ -2590,7 +2651,7 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
           </div>
         </div>
 
-        <div class="form-actions edit-action"><button class="btn" onclick="goBack()">取消</button><button class="btn btn-primary">儲存新增</button></div>
+        <div class="form-actions edit-action"><button class="btn" onclick="goBack()">取消</button><button class="btn btn-primary" onclick="saveP02Registration('ranch')">儲存新增</button></div>
         </div><!-- end t02r-single -->
         <div class="tab-content" id="t02r-batch">
           <div class="form-card">
@@ -5634,14 +5695,24 @@ function addFacilityRow(containerId) {
   const c = document.getElementById(containerId);
   const r = document.createElement('div');
   r.className = 'facility-item-row';
-  r.style.cssText = 'display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);';
-  r.innerHTML = `<select style="font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);width:100%;">
-    <option value="">請選擇設施</option>
-    <option>固液分離設施</option><option>沼氣池</option><option>廢水處理設施</option>
-    <option>廢污水儲存槽</option><option>沼液沼渣貯存池</option><option>雨廢水分離設施</option>
-    <option>除臭設施</option><option>孵化室</option><option>飼料倉庫</option>
-    <option>管理室</option><option>堆肥場</option><option>其他</option>
-  </select><button class="btn-remove" onclick="removeRow(this)">×</button>`;
+  r.innerHTML = `<select class="facility-category">
+<option value="">請選擇設施類別</option>
+<option>禽舍</option><option>畜禽舍</option><option>飼(芻)料調配室</option><option>死廢畜禽或孵化廢棄物處理</option>
+<option>堆肥舍</option><option>防疫消毒設施</option><option>畜禽停棲場</option><option>管理室</option>
+<option>倉儲設施</option><option>廢水處理設施</option><option>擠乳及儲乳設施</option><option>空地面積</option>
+<option>運動場面積</option><option>其他面積</option><option>其他設施</option><option>飼料桶</option>
+<option>孵化室</option><option>雛禽處理室</option><option>禽蛋洗選室</option><option>儲蛋室</option>
+<option>檢驗室</option><option>資料處理室</option><option>電機室</option><option>隔離檢疫室</option>
+<option>更衣消毒室</option><option>焚化爐</option><option>銷售專用承載區或出口</option><option>通道面積</option>
+<option>水塔</option><option>蓄水池</option><option>水池</option><option>消毒池</option><option>圍牆面積</option>
+<option>地磅</option><option>農舍</option>
+</select>
+<input type="text" class="facility-name" placeholder="設施名稱">
+<input type="text" class="facility-qty" placeholder="數量">
+<input type="text" class="facility-unit" placeholder="設施單位">
+<input type="text" class="facility-area" placeholder="面積">
+<div class="facility-area-unit">平方公尺</div>
+<button class="btn-remove" onclick="removeRow(this)">×</button>`;
   c.appendChild(r);
 }
 
@@ -8092,6 +8163,64 @@ function switchP02Tab(el, contentId) {
   page.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
   document.getElementById(contentId).classList.add("active");
 }
+// ── 畜牧場登記基本資訊：單筆新增儲存 ──
+function getP02FieldByLabel(container, labelText) {
+  const labels = Array.from(container.querySelectorAll('.form-label'));
+  const label = labels.find(el => (el.textContent || '').replace(/\s+/g,'').includes(labelText));
+  if (!label) return '';
+  const group = label.closest('.form-group');
+  const input = group && group.querySelector('input, select');
+  return input ? (input.value || '').trim() : '';
+}
+
+function collectP02Facilities(container) {
+  return Array.from(container.querySelectorAll('.facility-item-row')).map(row => ({
+    category: row.querySelector('.facility-category')?.value || '',
+    name: row.querySelector('.facility-name')?.value?.trim() || '',
+    qty: row.querySelector('.facility-qty')?.value?.trim() || '',
+    unit: row.querySelector('.facility-unit')?.value?.trim() || '',
+    area: row.querySelector('.facility-area')?.value?.trim() || '',
+    areaUnit: '平方公尺'
+  })).filter(x => x.category || x.name || x.qty || x.unit || x.area);
+}
+
+function saveP02Registration(type) {
+  const isFarm = type === 'farm';
+  const tab = document.getElementById(isFarm ? 't02f-single' : 't02r-single');
+  if (!tab) return;
+
+  const reg = getP02FieldByLabel(tab, isFarm ? '飼養登記證號' : '畜牧場登記證號');
+  const name = getP02FieldByLabel(tab, isFarm ? '飼養場名稱' : '畜牧場名稱');
+  const owner = getP02FieldByLabel(tab, '負責人');
+  const ownerTel = getP02FieldByLabel(tab, '負責人電話');
+  const contact = getP02FieldByLabel(tab, '聯絡人');
+  const contactTel = getP02FieldByLabel(tab, '聯絡人電話');
+  const town = getP02FieldByLabel(tab, '鄉鎮別');
+  const facilities = collectP02Facilities(tab);
+
+  if (!reg || !name) {
+    showToast('請先填寫必要的登記證號及場名', 'var(--red)');
+    return;
+  }
+
+  const record = {
+    reg, name, owner, ownerTel, contact, contactTel, town,
+    species: '—', status: '正常', statusCls: 'badge-green',
+    facilities, savedAt: new Date().toISOString()
+  };
+
+  const storageKey = isFarm ? 'chiayi_p02_saved_farm' : 'chiayi_p02_saved_ranch';
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  saved.push(record);
+  localStorage.setItem(storageKey, JSON.stringify(saved));
+
+  const dataArr = isFarm ? P02_FARM_DATA : P02_RANCH_DATA;
+  dataArr.push(record);
+
+  showToast('資料已儲存', 'var(--green)');
+  setTimeout(() => navTo('list-p02'), 450);
+}
+
 function searchP02(type) {
   const isFarm = type === "farm";
   const keyword = (document.getElementById(isFarm ? "p02FarmKeyword" : "p02RanchKeyword").value || "").trim().toLowerCase();
