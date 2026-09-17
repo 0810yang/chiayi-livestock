@@ -917,12 +917,14 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div class="sec-title">陳情紀錄(本府農業處及環保局) — 依陳情日期（年度月份）</div>
+        <div class="sec-title">陳情紀錄(本府農業處及環保局) — 今年與去年同月份比較</div>
+<div class="complaint-compare-note" style="color:#888;font-size:12px;margin:4px 0 8px;">具牧登資格且陳情項目為污染的場域</div>
         <div class="chart-wrap" style="height:330px;"><canvas id="chartBar2"></canvas></div>
       </div>
 
       <div class="card">
         <div class="sec-title">陳情紀錄(本府農業處及環保局)－依鄉鎮分布</div>
+        <div class="complaint-town-note" style="color:#888;font-size:12px;margin:4px 0 8px;">具牧登資格且陳情項目為污染的場域</div>
         <div class="chart-wrap" style="height:430px;"><canvas id="chartTownComplaint"></canvas></div>
       </div>
     </div>
@@ -4988,10 +4990,10 @@ function login(role) {
 function applyPerms(u) {
   // 首頁統一：所有權限皆以「駐點人員」目前使用的首頁版面B為基準。
   // 不因科長／農情調查承辦權限切換首頁圖表內容。
-  const isLayoutA = false;
-  document.getElementById('homeLayoutA').style.display = 'none';
-  document.getElementById('homeLayoutB').style.display = '';
-  // 首頁不顯示農情調查專用首頁圖表。農情調查資料仍依原權限規則於圖台、資料集及拓譜顯示。
+  const isLayoutA = !!(u.chiefOnly || u.agriOnly);
+  document.getElementById('homeLayoutA').style.display = isLayoutA ? '' : 'none';
+  document.getElementById('homeLayoutB').style.display = isLayoutA ? 'none' : '';
+  // 科長與農情調查承辦首頁顯示原本的農情調查＋畜牧場登記版面；駐點人員維持原首頁版面。
   ['staff-data-card','staff-cert-card','staff-map-card','staff-data-menu','staff-map-menu','staff-admin-menu'].forEach(cls => {
     const show = cls.includes('data') ? (u.canEdit || u.chiefOnly || u.agriOnly) : cls.includes('cert') ? true : cls.includes('map') ? u.showMap : cls.includes('admin') ? u.isAdmin : false;
     document.querySelectorAll('.' + cls).forEach(el => el.style.display = show ? '' : 'none');
@@ -5418,23 +5420,35 @@ function initCharts() {
   dashboardCharts['chartBar2'] = new Chart(document.getElementById('chartBar2'), {
     type:'line',
     data:{
-      labels:["2023/01","2023/02","2023/03","2023/04","2023/05","2023/06","2023/07","2023/08","2023/09","2023/10","2023/11","2023/12","2024/01"],
-      datasets:[{
-        label:'汙染場域件數',
-        data:[15,6,39,47,51,86,68,64,51,18,38,27,3],
-        borderColor:'#2563eb',
-        backgroundColor:'rgba(37,99,235,0.10)',
-        fill:true,
-        tension:0.25,
-        pointRadius:3,
-        pointHoverRadius:5
-      }]
+      labels:["01月","02月","03月","04月","05月","06月","07月","08月","09月","10月","11月","12月"],
+      datasets:[
+        {
+          label:'2025年',
+          data:[3,0,0,0,0,0,0,0,0,0,0,0],
+          borderColor:'#2563eb',
+          backgroundColor:'rgba(37,99,235,0.10)',
+          fill:false,
+          tension:0.25,
+          pointRadius:3,
+          pointHoverRadius:5
+        },
+        {
+          label:'2024年',
+          data:[15,6,39,47,51,86,68,64,51,18,38,27],
+          borderColor:'#94a3b8',
+          backgroundColor:'rgba(148,163,184,0.08)',
+          fill:false,
+          tension:0.25,
+          pointRadius:3,
+          pointHoverRadius:5
+        }
+      ]
     },
     options:{
       maintainAspectRatio:false,
       layout:{padding:{top:18,right:12}},
       plugins:{
-        legend:{display:false}
+        legend:{display:true,position:'top',labels:{font:f}}
       },
       scales:{
         y:{beginAtZero:true,ticks:{font:f}},
@@ -5453,7 +5467,8 @@ function initCharts() {
             const meta=chart.getDatasetMeta(di);
             meta.data.forEach(function(point, i){
               const value=dataset.data[i];
-              ctx.fillText(String(value), point.x, point.y-7);
+              if(value === null || value === undefined) return;
+              ctx.fillText(String(value), point.x, point.y - 7);
             });
           });
           ctx.restore();
@@ -5465,7 +5480,7 @@ function initCharts() {
   dashboardCharts['chartTownComplaint'] = new Chart(document.getElementById('chartTownComplaint'), {
     type:'bar',
     data:{
-      labels:["民雄鄉", "溪口鄉", "中埔鄉", "六腳鄉", "竹崎鄉", "朴子市", "大林鎮", "新港鄉", "水上鄉", "太保市", "鹿草鄉", "義竹鄉", "布袋鎮", "東石鄉", "未提供鄉鎮"],
+      labels:["民雄鄉", "溪口鄉", "中埔鄉", "六腳鄉", "竹崎鄉", "朴子市", "大林鎮", "新港鄉", "水上鄉", "太保市", "鹿草鄉", "義竹鄉", "布袋鎮", "東石鄉"],
       datasets:[{
         label:'汙染場域件數',
         data:[166, 71, 40, 39, 37, 30, 20, 20, 14, 13, 12, 9, 4, 3, 35],
