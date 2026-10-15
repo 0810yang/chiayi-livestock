@@ -306,6 +306,11 @@ body.livestock-map-mode #page-map.active{height:100%;display:flex;flex-direction
 .home-farm-town-table tbody tr:nth-child(even){background:#f3f5f6}
 .home-farm-town-table .home-farm-total-row{background:#ead9ce}
 
+
+/* 村里名稱標籤：放大到一定比例尺才顯示，避免全縣視野文字重疊 */
+.leaflet-tooltip.village-name-label { background:rgba(255,255,255,.92); border:1px solid #8E6BC8; border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,.25); color:#3D2466; font-size:11px; font-weight:700; padding:2px 4px; white-space:nowrap; }
+.leaflet-tooltip.selected-village-name-label { background:#FFF7A8; border:1px solid #B59A00; color:#332B00; font-size:13px; font-weight:800; z-index:1000; }
+.leaflet-container.livestock-map-labels-hidden .leaflet-tooltip.village-name-label { display:none !important; }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style id="topology-integration-style">
@@ -8994,16 +8999,31 @@ function initLivestockMap() {
     .then(function(data){
       livestockVillageBoundaryFeatures = data.features || [];
       const villageGeoJson = L.geoJSON(data, {
-        style:function(){ return {color:'#B388FF',weight:1.1,opacity:0.9,fillColor:'#B388FF',fillOpacity:0.035}; },
+        style:function(){ return {color:'#B388FF',weight:2.4,opacity:1,fillColor:'#B388FF',fillOpacity:0.035}; },
         onEachFeature:function(feature, layer){
           const p=feature.properties||{};
+          const villageName=String(p.VILLNAME||'').trim();
           layer.bindPopup('<strong>村里界圖（官方行政區）</strong><br>縣市：' +
             escapeLivestockMapHtml(p.COUNTYNAME||'') + '<br>鄉鎮市：' +
             escapeLivestockMapHtml(p.TOWNNAME||'') + '<br>村里：' +
-            escapeLivestockMapHtml(p.VILLNAME||''));
+            escapeLivestockMapHtml(villageName));
+          if(villageName){
+            layer.bindTooltip(escapeLivestockMapHtml(villageName), {
+              permanent:true, direction:'center', className:'village-name-label',
+              interactive:false, opacity:1, pane:'tooltipPane'
+            });
+          }
         }
       });
       villageGeoJson.addTo(livestockLayers.villageBoundary);
+      // 全縣視野隱藏村里名稱，縮放至鄉鎮層級後顯示，避免標籤互相遮擋。
+      function updateVillageLabelVisibility(){
+        if(!livestockMap) return;
+        const container=livestockMap.getContainer();
+        if(container) container.classList.toggle('livestock-map-labels-hidden', livestockMap.getZoom()<10);
+      }
+      livestockMap.on('zoomend', updateVillageLabelVisibility);
+      updateVillageLabelVisibility();
       if (livestockVillageBoundaryFeatures.length) {
         console.info('官方村里界載入完成，共 ' + livestockVillageBoundaryFeatures.length + ' 個嘉義縣村里。');
         const townEl = document.getElementById('livestockFilterTown');
@@ -9349,7 +9369,17 @@ function updateLivestockVillageHighlight(town, village, records) {
     style:function(){ return {
       color:'#FFE600', weight:4, opacity:1, fillColor:'#FFE600', fillOpacity:0.18,
       dashArray:'8 4', className:'livestock-village-selected-outline'
-    }; }
+    }; },
+    onEachFeature:function(feature, layer){
+      const p=feature.properties||{};
+      const name=String(p.VILLNAME||'').trim();
+      if(name){
+        layer.bindTooltip(escapeLivestockMapHtml(name), {
+          permanent:true, direction:'center', className:'selected-village-name-label',
+          interactive:false, opacity:1
+        });
+      }
+    }
   }).addTo(livestockMap);
   livestockVillageHighlight.bringToFront();
   const bounds = livestockVillageHighlight.getBounds();

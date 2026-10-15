@@ -1,6 +1,8 @@
-嘉義畜產雛型網站更新包
+嘉義畜產雛型更新包
 
-部署方式：將本資料夾內的 index.html 與 data 資料夾中的所有檔案，一起放到 GitHub Pages repository 根目錄。
-請勿只上傳 index.html，否則本地 GeoJSON 圖資將無法載入。
+本版調整：
+1. 村里界圖於地圖縮放至 10 級以上時顯示村里名稱，避免全縣視野標籤過度重疊。
+2. 鄉鎮／村里篩選後，黃色選取範圍上會顯示對應村里名稱。
+3. 保留既有村里界、河川及中央管區域排水圖資與圖層配色。
 
-圖資：riverlin.geojson、riverpoly.geojson、village_boundary.geojson、central_drainage_area.geojson
+部署時請將 index.html 與 data 資料夾一併放在 GitHub Pages 根目錄。
