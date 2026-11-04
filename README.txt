@@ -1,8 +1,14 @@
-嘉義畜產雛型更新包
+嘉義畜產 Git 更新包
 
-本版調整：
-1. 村里界圖於地圖縮放至 10 級以上時顯示村里名稱，避免全縣視野標籤過度重疊。
-2. 鄉鎮／村里篩選後，黃色選取範圍上會顯示對應村里名稱。
-3. 保留既有村里界、河川及中央管區域排水圖資與圖層配色。
+更新方式：將本資料夾內的 index.html 與 data 資料夾，放回原本 Git 專案根目錄並覆蓋同名檔案/圖資。
 
-部署時請將 index.html 與 data 資料夾一併放在 GitHub Pages 根目錄。
+專案結構：
+  index.html
+  data/
+    village_boundary.geojson       嘉義縣＋嘉義市官方村里界
+    riverpoly.geojson              嘉義縣＋嘉義市河川（河道）
+    riverlin.geojson                嘉義縣＋嘉義市河川（支流/河川線）
+    river_basin.geojson             嘉義縣＋嘉義市河川流域範圍
+    central_drainage_area.geojson   嘉義縣＋嘉義市中央管區域排水設施範圍
+
+注意：請保留 index.html 與 data 資料夾的相對位置；GeoJSON 請勿改名，否則前端 fetch 路徑會找不到檔案。
