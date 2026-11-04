@@ -8966,9 +8966,9 @@ function initLivestockMap() {
   ['complaint','agri','riverChannel','riverTributary'].forEach(function(kind){ livestockLayers[kind] = L.layerGroup().addTo(livestockMap); });
 
   // 外部參考圖層：官方來源。村里界使用國土測繪中心公開 WMS；精確選取多邊形仍需官方向量檔。
-  // 經濟部水利署 BASIN 原始來源：https://gic.wra.gov.tw/gis/gic/API/Google/DownLoad.aspx?fname=BASIN&filetype=SHP
+  // 嘉義縣市河川流域範圍：使用 data/chiayi_county_city_river_basin.geojson
   livestockLayers.riverBasin = L.layerGroup().addTo(livestockMap);
-  fetch('data/river_basin.geojson')
+  fetch('data/chiayi_county_city_river_basin.geojson')
     .then(function(response){
       if (!response.ok) throw new Error('river_basin.geojson 載入失敗：' + response.status);
       return response.json();
@@ -8992,13 +8992,13 @@ function initLivestockMap() {
     })
     .catch(function(error){
       console.warn(error);
-      showLivestockMapStatus('河川流域範圍圖載入失敗，請確認 data/river_basin.geojson 是否已放入 Git。', true);
+      showLivestockMapStatus('河川流域範圍圖載入失敗，請確認 data/chiayi_county_city_river_basin.geojson 是否已放入 Git。', true);
     });
 
-  // 官方村里界圖：使用本次提供之內政部國土測繪中心 SHP，篩選嘉義縣及嘉義市村里並轉為 WGS84 GeoJSON。
+  // 官方村里界圖：使用 data/chiayi_county_city_village_boundary.geojson，提供嘉義縣及嘉義市村里多邊形。
   // 不再依賴全臺 WMS，也讓篩選村里時可以直接使用正式行政區多邊形。
   livestockLayers.villageBoundary = L.layerGroup().addTo(livestockMap);
-  fetch('data/village_boundary.geojson')
+  fetch('data/chiayi_county_city_village_boundary.geojson')
     .then(function(response){
       if (!response.ok) throw new Error('village_boundary.geojson 載入失敗：' + response.status);
       return response.json();
@@ -9042,7 +9042,7 @@ function initLivestockMap() {
     })
     .catch(function(error){
       console.warn(error);
-      showLivestockMapStatus('官方村里界載入失敗，請確認 data/village_boundary.geojson 是否已放入 Git。', true);
+      showLivestockMapStatus('官方村里界載入失敗，請確認 data/chiayi_county_city_village_boundary.geojson 是否已放入 Git。', true);
     });
 
   livestockLayers.riverBasin.on('tileerror', function(){
@@ -9088,8 +9088,8 @@ function initLivestockMap() {
     });
   }
 
-  // 經濟部水利署－河流（河道）：RIVERPOLY 實際圖資
-  fetch('data/riverpoly.geojson')
+  // 嘉義縣市河川線圖資：使用 data/chiayi_county_city_river_lines.geojson
+  fetch('data/chiayi_county_city_river_lines.geojson')
     .then(function(response){
       if (!response.ok) throw new Error('riverpoly.geojson 載入失敗：' + response.status);
       return response.json();
@@ -9125,7 +9125,7 @@ function initLivestockMap() {
     })
     .catch(function(error){
       console.warn(error);
-      showLivestockMapStatus('河川（河道）圖資載入失敗，請確認 data/riverpoly.geojson 是否已放入 Git。', true);
+      showLivestockMapStatus('河川（河道）圖資載入失敗，請確認 data/chiayi_county_city_river_lines.geojson 是否已放入 Git。', true);
     });
   // 中央管區域排水設施範圍：使用使用者提供的 REGDAREA 官方範圍圖資。
   livestockLayers.centralDrainageArea = L.layerGroup().addTo(livestockMap);

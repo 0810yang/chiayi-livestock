@@ -1,14 +1,19 @@
-嘉義畜產 Git 更新包
+嘉義畜產圖台－圖資路徑修正版
 
-更新方式：將本資料夾內的 index.html 與 data 資料夾，放回原本 Git 專案根目錄並覆蓋同名檔案/圖資。
+資料夾內容：
+- index.html：已修改圖資引用路徑的首頁
+- data/riverlin.geojson：目前對話中有提供的河川支流圖資
 
-專案結構：
-  index.html
-  data/
-    village_boundary.geojson       嘉義縣＋嘉義市官方村里界
-    riverpoly.geojson              嘉義縣＋嘉義市河川（河道）
-    riverlin.geojson                嘉義縣＋嘉義市河川（支流/河川線）
-    river_basin.geojson             嘉義縣＋嘉義市河川流域範圍
-    central_drainage_area.geojson   嘉義縣＋嘉義市中央管區域排水設施範圍
+注意：
+這不是完整 GitHub Repository 備份。依照使用者提供的 GitHub 截圖，data 資料夾另有下列圖資，
+但目前對話中未取得其檔案內容，因此未能納入本 ZIP：
+- central_drainage_area.geojson
+- chiayi_county_city_drainage.geojson
+- chiayi_county_city_river_basin.geojson
+- chiayi_county_city_river_lines.geojson
+- chiayi_county_city_village_boundary.geojson
+- riverpoly.geojson
+- village_boundary.geojson
 
-注意：請保留 index.html 與 data 資料夾的相對位置；GeoJSON 請勿改名，否則前端 fetch 路徑會找不到檔案。
+若要取得可直接部署的完整網站，請從 GitHub Repository 使用 Code > Download ZIP 下載整個專案，
+再將 ZIP 上傳到對話；即可將修改後的 index.html 與完整 data 圖資整合打包。
